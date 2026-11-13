@@ -95,8 +95,14 @@ prepareProgram external p0 = do
 
 convertProgram :: ConvertOptions -> Program -> Either String ConvertResult
 convertProgram opts p0 = do
-  (p, prepEvents) <- prepareProgram (coExternal opts) p0
-  let defined = Set.fromList (progOrder p) `Set.union` coExternal opts
+  (p1, prepEvents) <- prepareProgram (coExternal opts) p0
+  -- member/2 that the program does not define itself is the Detlog
+  -- runtime's member_cp/2 packet, not a library predicate.
+  let userMember = M.member ("member", 2) (progPreds p0)
+      p = if userMember then p1
+          else p1 { progPreds = M.delete ("member", 2) (progPreds p1)
+                  , progOrder = filter (/= ("member", 2)) (progOrder p1) }
+      defined = Set.fromList (progOrder p) `Set.union` coExternal opts
       effectful = effectfulPreds p
       env0 = Env { envDefined = defined, envEffectful = effectful, envOpts = opts }
   results <- forM (programClauses p) $ \(key, cls) ->
