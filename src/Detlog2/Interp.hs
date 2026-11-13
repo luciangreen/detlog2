@@ -29,6 +29,7 @@ module Detlog2.Interp
   , bindS
   ) where
 
+import qualified Data.IntSet as IS
 import qualified Data.Map.Strict as M
 import Detlog2.Builtins
 import Detlog2.Parser
@@ -37,10 +38,11 @@ import Detlog2.Term
 data Options = Options
   { optMaxDepth :: Int      -- ^ maximum call depth before an error is raised
   , optDetCheck :: Bool     -- ^ every predicate call must give at most one answer
+  , optWatch :: [Int]       -- ^ symbolic inputs: variables that stand for unknown values
   }
 
 defaultOptions :: Options
-defaultOptions = Options { optMaxDepth = 100000, optDetCheck = False }
+defaultOptions = Options { optMaxDepth = 100000, optDetCheck = False, optWatch = [] }
 
 cutMessage :: String
 cutMessage =
@@ -185,9 +187,30 @@ solve cx depth g0 st = case walk st g0 of
         in maybe [] (\s -> [Ans s]) (unify r (mkList (sortDedup st1 copies) (Atom "[]")) st1)
       s -> typeErr "aggregate_all/3 specification" s
 
-    call g f as = case builtin f as st of
-      Just s -> s
-      Nothing -> callUser g (f, length as)
+    call g f as
+      | not (null (optWatch (cxOpts cx))) && watchedUse f as =
+          [Err ("symbolic run: " ++ f ++ "/" ++ show (length as)
+                ++ " inspects an input variable, so its result could differ for actual values")]
+      | otherwise = case builtin f as st of
+          Just s -> s
+          Nothing -> callUser g (f, length as)
+
+    -- In a symbolic run, a built-in whose result depends on whether an
+    -- input variable is bound (or on its value) would decide for every
+    -- input what it decided for the unbound variable.  Type tests are
+    -- unsafe on a watched variable itself; comparisons on any term that
+    -- contains one.
+    watchedUse f as =
+      let watched = IS.fromList [ i | v <- optWatch (cxOpts cx), Var i _ <- [walk st (Var v "")] ]
+          isWatched t = case walk st t of
+            Var i _ -> IS.member i watched
+            _ -> False
+          contains t = any (`IS.member` watched) (IS.toList (termVarIds (resolve st t)))
+          key = (f, length as)
+      in if key `elem` typeTests then any isWatched as
+         else key `elem` varSensitiveKeys && any contains as
+    typeTests = [ ("var", 1), ("nonvar", 1), ("atom", 1), ("number", 1), ("integer", 1), ("float", 1)
+                , ("atomic", 1), ("compound", 1), ("callable", 1), ("is_list", 1) ]
 
     callUser g key
       | depth >= optMaxDepth (cxOpts cx) =
