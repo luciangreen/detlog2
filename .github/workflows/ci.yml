@@ -24,6 +24,14 @@ jobs:
           cat rt.log
       - name: Build and test (Build.hs)
         run: runghc Build.hs ci > ci.log 2>&1; echo "exit $?" >> ci.log; tail -5 ci.log
+      - name: Converted programs on plain SWI-Prolog
+        run: |
+          mkdir -p "$RUNNER_TEMP/log/conv"
+          for f in splice cuts output sample_program; do ./build/detlog2 convert examples/$f.pl -o "$RUNNER_TEMP/log/conv/$f.pl" > "$RUNNER_TEMP/log/conv/$f.txt" 2>&1 || true; done
+          ./build/detlog2 memoise examples/memo.pl --goal 'pick(2, X)' --goal 'pick(5, X)' --complete -o "$RUNNER_TEMP/log/conv/memo.pl" > "$RUNNER_TEMP/log/conv/memo.txt" 2>&1 || true
+          swipl tools/cutfree.pl -- tests/native_tests.pl > native.log 2>&1; echo "exit $?" >> native.log
+          swipl tests/native_tests.pl -- "$RUNNER_TEMP/log/conv" >> native.log 2>&1; echo "exit $?" >> native.log
+          cat native.log
       - name: TEMPORARY publish logs and converter listings
         if: always() && github.event_name == 'push'
         run: |
@@ -32,7 +40,7 @@ jobs:
           ./build/detlog2 memoise examples/memo.pl --goal 'pick(2, X)' --goal 'pick(5, X)' --complete -o "$RUNNER_TEMP/log/conv/memo.pl" > "$RUNNER_TEMP/log/conv/memo.txt" 2>&1 || true
           ./build/detlog2 packets examples/splice.pl 'c(A, B)' > "$RUNNER_TEMP/log/conv/packets.txt" 2>&1 || true
           ./build/detlog2 check examples/cuts.pl 'a(X)' 'max(3, 7, Z)' 'classify(0, C)' > "$RUNNER_TEMP/log/conv/check.txt" 2>&1 || true
-          cp rt.log ci.log "$RUNNER_TEMP/log/" || true
+          cp rt.log ci.log native.log "$RUNNER_TEMP/log/" || true
           cd "$RUNNER_TEMP/log"; echo "${{ github.sha }}" > status.txt
           git init -q && git checkout -q -b ci-log && git add . && git -c user.name=ci -c user.email=ci@users.noreply.github.com commit -qm log
           git push -qf "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" ci-log
