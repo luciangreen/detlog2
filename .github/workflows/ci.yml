@@ -19,7 +19,7 @@ jobs:
       - name: Prolog runtime (cut-free check, tests)
         run: |
           swipl --version
-          swipl tools/cutfree.pl src/detlog_runtime.pl tools/cutfree.pl tests/runtime_tests.pl > rt.log 2>&1; echo "exit $?" >> rt.log
+          swipl tools/cutfree.pl -- src/detlog_runtime.pl tools/cutfree.pl tests/runtime_tests.pl > rt.log 2>&1; echo "exit $?" >> rt.log
           swipl tests/runtime_tests.pl >> rt.log 2>&1; echo "exit $?" >> rt.log
           cat rt.log
       - name: Build and test (Build.hs)

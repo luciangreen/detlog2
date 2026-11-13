@@ -25,9 +25,15 @@
 :- initialization(main, main).
 
 main :-
-    current_prolog_flag(argv, Files),
+    current_prolog_flag(argv, Args),
+    drop_dashes(Args, Files),
     check_files(Files, 0, Bad),
     report_total(Bad).
+
+drop_dashes([], []).
+drop_dashes([A|As], Fs) :-
+    if_commit(A == '--', Fs = Fs1, Fs = [A|Fs1]),
+    drop_dashes(As, Fs1).
 
 report_total(N) :-
     compare(O, N, 0),

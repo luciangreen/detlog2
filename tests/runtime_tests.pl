@@ -24,7 +24,8 @@ finish(>) :-
     halt(1).
 
 run_all([], P, F, P, F).
-run_all([T|Ts], P0, F0, P, F) :-
+run_all([T0|Ts], P0, F0, P, F) :-
+    copy_term(T0, T),                   % each test has its own variables
     run_one(T, Verdict),
     name_of(T, Name),
     show(Verdict, Name, P0, F0, P1, F1),
