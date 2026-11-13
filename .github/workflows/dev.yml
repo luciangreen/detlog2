@@ -20,6 +20,6 @@ jobs:
       - name: ios diff
         run: |
           swipl io/ios.pl write build/ios_now.txt || true
-          diff io/ios.txt build/ios_now.txt > build/ios.diff; echo "diff lines: $(wc -l < build/ios.diff)"
+          diff io/ios.txt build/ios_now.txt > build/ios.diff || true; echo "diff lines: $(wc -l < build/ios.diff)"
           grep -c '^[0-9]*\. ' io/ios.txt
           head -150 build/ios.diff

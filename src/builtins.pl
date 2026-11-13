@@ -792,8 +792,11 @@ dec_code(St, T, M) :-
     walk(T, St, W),
     if_commit(W = int(C), M = just(C), M = nothing).
 
-decode_all(_, _, [], just([])).
-decode_all(Dec, St, [T|Ts], M) :-
+decode_all(Dec, St, Ts, M) :-
+    decode_all_(Ts, Dec, St, M).
+
+decode_all_([], _, _, just([])).
+decode_all_([T|Ts], Dec, St, M) :-
     call(Dec, St, T, MC),
     decode_more(MC, Dec, St, Ts, M).
 
@@ -1302,8 +1305,11 @@ one_column_t([X|Xs], [R|Rs]) :-
     one_column_t(Xs, Rs).
 
 %  Nested packets are spliced inline: cp([1, cp([2,3])]) offers 1, 2, 3.
-flatten_cp(_, [], []).
-flatten_cp(St, [X|Xs], Out) :-
+flatten_cp(St, Xs, Out) :-
+    flatten_cp_(Xs, St, Out).
+
+flatten_cp_([], _, []).
+flatten_cp_([X|Xs], St, Out) :-
     walk(X, St, W),
     if_commit(( W = comp(cp, [L]), term_to_list(L, St, just(Ys)) ),
               flatten_cp(St, Ys, F),

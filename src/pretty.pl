@@ -24,21 +24,24 @@ txt(S, Cs0, Cs) :-
     string_codes(S, Codes),
     conc(Codes, Cs, Cs0).
 
-pr(_, var(I, N), _, Nm, Cs0, Cs) :-
+pr(P, T, Q, Nm, Cs0, Cs) :-
+    pr_t(T, P, Q, Nm, Cs0, Cs).
+
+pr_t(var(I, N), _, _, Nm, Cs0, Cs) :-
     call(Nm, I, N, S),
     txt(S, Cs0, Cs).
-pr(_, int(I), _, _, Cs0, Cs) :-
+pr_t(int(I), _, _, _, Cs0, Cs) :-
     number_string(I, S),
     txt(S, Cs0, Cs).
-pr(_, flt(D), _, _, Cs0, Cs) :-
+pr_t(flt(D), _, _, _, Cs0, Cs) :-
     show_float(D, S),
     txt(S, Cs0, Cs).
-pr(P, atom(A), Q, _, Cs0, Cs) :-
+pr_t(atom(A), P, Q, _, Cs0, Cs) :-
     is_infix(A, I),
     is_prefix(A, Pr),
     bool_or(I, Pr, IsOp),
     pr_atom(IsOp, P, A, Q, Cs0, Cs).
-pr(P, comp(F, As), Q, Nm, Cs0, Cs) :-
+pr_t(comp(F, As), P, Q, Nm, Cs0, Cs) :-
     comp_shape(F, As, Shape),
     pr_comp(Shape, P, F, As, Q, Nm, Cs0, Cs).
 
@@ -53,9 +56,12 @@ atom_s(A, Q, Cs0, Cs) :-
     atom_q(A, Q, S),
     txt(S, Cs0, Cs).
 
-atom_q(A, true, S) :-
+atom_q(A, Q, S) :-
+    atom_q_(Q, A, S).
+
+atom_q_(true, A, S) :-
     quote_atom(A, S).
-atom_q(A, false, S) :-
+atom_q_(false, A, S) :-
     atom_string(A, S).
 
 comp_shape(F, As, Shape) :-

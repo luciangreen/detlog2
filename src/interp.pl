@@ -134,8 +134,12 @@ solve_comp(setof, _, [T, X, L], Cx, D, St, S) :-
 solve_comp(user, F, As, Cx, D, St, S) :-
     call_goal(Cx, D, comp(F, As), F, As, St, S).
 
-findall_args([T, X, L], T, X, L, atom('[]')).
-findall_args([T, X, L, Tl], T, X, L, Tl).
+findall_args(As, T, X, L, Tl) :-
+    length(As, N),
+    findall_args_(N, As, T, X, L, Tl).
+
+findall_args_(3, [T, X, L], T, X, L, atom('[]')).
+findall_args_(4, [T, X, L, Tl], T, X, L, Tl).
 
 decision_m(just(Cs), Def, Cx, D, St, S) :-
     decision_goal(Cs, Def, G),

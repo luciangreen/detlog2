@@ -322,8 +322,11 @@ unify_args_more(just(St), As, Bs, M) :-
     unify_args(As, Bs, St, M).
 
 %  unify_then(+A, +B, +MaybeState, -MaybeState): Maybe's >>= for unify.
-unify_then(_, _, nothing, nothing).
-unify_then(A, B, just(St), M) :-
+unify_then(A, B, M0, M) :-
+    unify_then_(M0, A, B, M).
+
+unify_then_(nothing, _, _, nothing).
+unify_then_(just(St), A, B, M) :-
     unify(A, B, St, M).
 
 % ---------------------------------------------------------------------------
@@ -430,12 +433,15 @@ vars_ord_list([A|As], S0, O0, S, O) :-
     vars_ord_list(As, S1, O1, S, O).
 
 %  rename_term(+Offset, +Term, -Renamed)
-rename_term(Off, var(I, N), var(J, N)) :-
+rename_term(Off, T, R) :-
+    rename_t(T, Off, R).
+
+rename_t(var(I, N), Off, var(J, N)) :-
     J is I + Off.
-rename_term(_, atom(A), atom(A)).
-rename_term(_, int(I), int(I)).
-rename_term(_, flt(F), flt(F)).
-rename_term(Off, comp(F, As), comp(F, Rs)) :-
+rename_t(atom(A), _, atom(A)).
+rename_t(int(I), _, int(I)).
+rename_t(flt(F), _, flt(F)).
+rename_t(comp(F, As), Off, comp(F, Rs)) :-
     rename_list(As, Off, Rs).
 
 rename_list([], _, []).
@@ -503,10 +509,13 @@ rename_by_list([A|As], T, [R|Rs]) :-
     rename_by_list(As, T, Rs).
 
 %  copy_all(+State, +Terms, -Copies, -State)
-copy_all(St, [], [], St).
-copy_all(St0, [T|Ts], [C|Cs], St) :-
+copy_all(St0, Ts, Cs, St) :-
+    copy_all_(Ts, St0, Cs, St).
+
+copy_all_([], St, [], St).
+copy_all_([T|Ts], St0, [C|Cs], St) :-
     copy_term_st(St0, T, C, St1),
-    copy_all(St1, Ts, Cs, St).
+    copy_all_(Ts, St1, Cs, St).
 
 % ---------------------------------------------------------------------------
 % Kinds of terms

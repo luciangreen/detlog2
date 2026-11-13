@@ -103,8 +103,11 @@ is_sym_c(C) :-
     memberchk(C, `+-*/\\^<>=~:.?@#&$`).
 
 %  span_codes(:Test, +Codes, -Prefix, -Rest)
-span_codes(_, [], [], []).
-span_codes(P, [C|Cs], Pre, Rest) :-
+span_codes(P, Cs, Pre, Rest) :-
+    span_c(Cs, P, Pre, Rest).
+
+span_c([], _, [], []).
+span_c([C|Cs], P, Pre, Rest) :-
     test(call(P, C), B),
     span_b(B, C, Cs, P, Pre, Rest).
 
