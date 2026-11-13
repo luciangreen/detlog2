@@ -291,7 +291,7 @@ check_memo_entry(Here, F, N, OP, Entry) :-
     if_commit(Errs = [E1|_], true, E1 = ""),
     format(string(M2), "~sre-running ~s raised ~s", [Here, GS, E1]),
     ensure(Errs == [], M2),
-    maplist(actual_item(Pat), Evs, AItems),
+    maplist(actual_item_p(Pat), Evs, AItems),
     concat_lists(AItems, Actual),
     list_of(Recorded, Rec),
     format(string(M3), "~s~s: the recorded packet is not the program's answers", [Here, GS]),
@@ -301,11 +301,14 @@ check_memo_entry(Here, F, N, OP, Entry) :-
 variant_ok(St, A, B) :-
     variant_t(St, A, B, true).
 
-actual_item(Pat, ans(St), [R]) :-
+actual_item_p(Pat, Ev, Out) :-
+    actual_item(Ev, Pat, Out).
+
+actual_item(ans(St), Pat, [R]) :-
     resolve(Pat, St, R).
-actual_item(_, out(O), [comp(out, [atom(A)])]) :-
+actual_item(out(O), _, [comp(out, [atom(A)])]) :-
     atom_string(A, O).
-actual_item(_, err(_), []).
+actual_item(err(_), _, []).
 
 stream_take_events(N, S, Evs) :-
     if_commit(N =< 0,
@@ -327,9 +330,9 @@ node(T, n(R, Src, Env, Out, Gen, Subs)) :-
                 format(string(M), "not a derivation node: ~s", [TS1]), pfail(M) )).
 
 sub_string_det(S, N, T) :-
-    string_length(S, L),
-    K is min(N, L),
-    sub_string(S, 0, K, _, T).
+    string_codes(S, Cs),
+    take(N, Cs, Front),
+    string_codes(T, Front).
 
 %  chk(+Cx, +Deriv, -FreshIds): check one derivation node; the fresh
 %  variables it introduces.

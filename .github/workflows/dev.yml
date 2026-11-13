@@ -9,17 +9,15 @@ jobs:
       - uses: actions/checkout@v4
       - run: sudo apt-get update -qq && sudo apt-get install -y -qq swi-prolog-nox
       - name: cut-free check
-        run: swipl tools/cutfree.pl -- detlog2.pl src/*.pl io/ios.pl || true
+        run: swipl tools/cutfree.pl -- detlog2.pl src/*.pl io/ios.pl tests/*.pl tools/cutfree.pl || true
       - name: build
-        run: mkdir -p build && swipl -o build/detlog2 -c detlog2.pl 2>&1 | tail -40
-      - name: smoke
+        run: mkdir -p build && swipl -o build/detlog2 -c detlog2.pl 2>&1 | grep -v "Disabled autoloading" | tail -40
+      - name: cli tests
         run: |
-          ./build/detlog2 run examples/sample_program.pl 'member(X, [1,2,3])' || true
-          ./build/detlog2 run examples/sample_program.pl 'once(between(1, inf, X))' || true
-          ./build/detlog2 ref examples/cuts.pl 'max(5, 3, Z)' || true
+          git clone -q --depth 1 https://github.com/luciangreen/mnns ../mnns
+          MNNS_DIR=$PWD/../mnns swipl tests/cli.pl || true
       - name: ios diff
         run: |
           swipl io/ios.pl write build/ios_now.txt || true
           diff io/ios.txt build/ios_now.txt > build/ios.diff || true; echo "diff lines: $(wc -l < build/ios.diff)"
-          grep -c '^[0-9]*\. ' io/ios.txt
-          head -150 build/ios.diff
+          head -60 build/ios.diff
