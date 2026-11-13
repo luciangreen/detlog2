@@ -100,12 +100,22 @@ load_once(M, File, Kind) :-
 
 %  Strings are character lists, as in detlog2.
 load_into(plain, M, File) :-
-    M:set_prolog_flag(double_quotes, chars),
-    load_files(M:File, [silent(true)]).
+    setup_call_cleanup(open(File, read, S),
+                       assert_terms(S, M),
+                       close(S)).
 load_into(runtime, M, File) :-
     M:set_prolog_flag(double_quotes, chars),
     add_import_module(M, detlog_runtime, start),
     load_files(M:File, [silent(true)]).
+
+assert_terms(S, M) :-
+    read_term(S, T, [double_quotes(chars)]),
+    if_commit(T == end_of_file,
+              true,
+              ( assert_term(T, M), assert_terms(S, M) )).
+
+assert_term(T, M) :-
+    if_commit(T = (:- _), true, assertz(M:T)).
 
 %  The original: answers of Q (as argument lists) with the output written
 %  before each one, as a list of out(Text) and ans(Args) items.
