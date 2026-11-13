@@ -75,8 +75,7 @@ elimPred key@(_, arity) cls
             -- Merge the predicate into one clause of decisions.
             let base = 0
                 args = [ Var (base + i) ("A" ++ show (i + 1)) | i <- [0 .. arity - 1] ]
-                (alts, next, evs) = foldr (alt args) (Atom "fail", arity, []) (zip [1 ..] cls1)
-                _ = next
+                (alts, _, evs) = foldr (alt args) (Atom "fail", arity, []) (zip [1 ..] cls1)
                 headT = case fst key of
                   f | arity == 0 -> Atom f
                     | otherwise -> Comp f args

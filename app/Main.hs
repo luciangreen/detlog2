@@ -165,6 +165,11 @@ writeConverted fl source events prog = do
     Nothing -> putStr text
     Just o -> writeFile o text >> hPutStrLn stderr ("wrote " ++ o)
 
+-- | A query variable that is still unbound and unaliased is not shown.
+unboundSelf :: Term -> Term -> Bool
+unboundSelf (Var i _) (Var j _) = i == j
+unboundSelf _ _ = False
+
 showBindings :: [(String, Term)] -> String
 showBindings [] = "true."
 showBindings bs = intercalate ", " [ n ++ " = " ++ showAnswerVal v | (n, v) <- bs ] ++ "."
@@ -179,7 +184,7 @@ printAnswers maxAns vs stream = loop (0 :: Int) stream
     loop k (Out t : r) = putStr t >> hFlush stdout >> loop k r
     loop _ (Err e : _) = putStrLn ("error: " ++ e) >> exitWith (ExitFailure 3)
     loop k (Ans s : r) = do
-      putStrLn (showBindings [ (n, resolve s v) | (n, v) <- named ])
+      putStrLn (showBindings [ (n, t) | (n, v) <- named, let t = resolve s v, not (unboundSelf v t) ])
       loop (k + 1) r
 
 checkQuery :: Flags -> Program -> String -> IO Bool

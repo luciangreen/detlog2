@@ -9,6 +9,7 @@ module Detlog2.Pretty
   , quoteAtom
   , showAnswerTerm
   , clauseTerm
+  , showSourceTerm
   ) where
 
 import Data.Char
@@ -131,9 +132,7 @@ clauseNamer t =
                                 , not (Set.member c used) ]
             in (Set.insert cand used, IM.insert i cand m)
       assign acc _ = acc
-      reserved = Set.fromList [ n | Var _ n <- ordered, validName n ]
       (_, names) = foldl assign (Set.empty, IM.empty) ordered
-      _ = reserved
   in \i _ -> IM.findWithDefault ("_G" ++ show i) i names
   where
     validName n = not (null n) && (isUpper (head n)) && all (\c -> isAlphaNum c || c == '_') n
@@ -169,12 +168,17 @@ goal nm ind g = case g of
     pad ind ++ "(   " ++ inner a ++ "\n" ++ pad ind ++ ";   " ++ inner b
       ++ "\n" ++ pad ind ++ ")"
   Comp "if_commit" [c, t, e] ->
-    pad ind ++ "if_commit(\n" ++ body nm (ind + 1) c ++ ",\n"
-      ++ body nm (ind + 1) t ++ ",\n" ++ body nm (ind + 1) e ++ "\n"
+    pad ind ++ "if_commit(\n" ++ block c ++ ",\n"
+      ++ block t ++ ",\n" ++ block e ++ "\n"
       ++ pad ind ++ ")"
   _ -> pad ind ++ showTermWith True nm g
   where
     pad k = replicate (4 * k) ' '
+    -- a conjunction argument must stay one argument when read back
+    block x = case x of
+      Comp "," _ -> pad (ind + 1) ++ "(   " ++ dropWhile (== ' ') (body nm (ind + 2) x)
+                      ++ "\n" ++ pad (ind + 1) ++ ")"
+      _ -> body nm (ind + 1) x
     inner x = dropWhile (== ' ') (body nm (ind + 1) x)
     elseChain e = case e of
       Comp ";" [Comp "->" [c2, t2], e2] ->
@@ -188,3 +192,7 @@ showClauses = concatMap (\c -> showClause c ++ "\n")
 showProgram :: Program -> String
 showProgram p =
   intercalate "\n" [ showClauses cs | (_, cs) <- programClauses p ]
+
+-- | Print with the variables' source names (for reports).
+showSourceTerm :: Term -> String
+showSourceTerm = showTermWith True (\i n -> if null n || n == "_" then "_G" ++ show i else n)

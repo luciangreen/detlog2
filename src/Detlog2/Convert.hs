@@ -340,7 +340,6 @@ envSeq env seen gs envT out
       c1 <- envCode env seen g envT r1
       cr <- rowsCode env (seen `IS.union` termVarIds g) (mkConj rest) r1 envT out
       return (c1 ++ cr)
-  | otherwise = return [eq out (list [envT])]
 
 -- | Code mapping a list of rows to the rows after Goal: an auxiliary
 -- predicate iterates over the rows (first argument [] or [_|_]).
@@ -432,7 +431,7 @@ spliceCode env seen grp envT out = do
       chain [] = finalG
       chain ((code, p, _) : more) = code ++ [ifCommit (eq p nilT) (eq out nilT) (mkConj (chain more))]
       needsGuard = not (IS.null (IS.intersection seen (IS.unions (map termVarIds grp))))
-  event ("splice_early(" ++ intercalate ", " [ showTermQ g | g <- grp ] ++ ")")
+  event ("splice_early(" ++ intercalate ", " [ showSourceTerm g | g <- grp ] ++ ")")
   if needsGuard
     then do
       seqCode <- envSeqNoSplice env seen grp envT out
