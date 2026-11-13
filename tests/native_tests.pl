@@ -1,6 +1,7 @@
 /*  native_tests.pl - run converted (Detlog) programs on plain SWI-Prolog.
 
     swipl tests/native_tests.pl -- CONVERTED_DIR
+    swipl tests/native_tests.pl -- docs/examples sketch
 
     CONVERTED_DIR holds the converter's output for the examples
     (splice.pl, cuts.pl, output.pl, sample_program.pl and memo.pl).  For
@@ -17,8 +18,9 @@
 
 main :-
     current_prolog_flag(argv, Args),
-    last_arg(Args, Dir),
-    cases(Cases),
+    drop_dashes(Args, Args1),
+    mode_args(Args1, Dir, Mode),
+    mode_cases(Mode, Cases),
     run_cases(Cases, Dir, 0, 0, Pass, Fail),
     format("~d passed, ~d failed~n", [Pass, Fail]),
     compare(O, Fail, 0),
@@ -28,12 +30,41 @@ finish(=).
 finish(>) :-
     halt(1).
 
-last_arg([A|As], Last) :-
-    last_of(As, A, Last).
+drop_dashes([], []).
+drop_dashes([A|As], Fs) :-
+    if_commit(A == '--', Fs = Fs1, Fs = [A|Fs1]),
+    drop_dashes(As, Fs1).
 
-last_of([], A, A).
-last_of([B|Bs], _, Last) :-
-    last_of(Bs, B, Last).
+%  DIR, or DIR sketch: the compact hand-written forms of docs/examples.md.
+mode_args([Dir|Rest], Dir, Mode) :-
+    if_commit(Rest = [sketch], Mode = sketch, Mode = converted).
+
+mode_cases(converted, Cases) :-
+    cases(Cases).
+mode_cases(sketch, Cases) :-
+    sketch_cases(Cases).
+
+sketch_cases([ case(splice, splice, c(_, _)),
+               case(splice, splice, p(_)),
+               case(splice, splice, q(_, _)),
+               case(cuts, cuts, a(_)),
+               case(cuts, cuts, a(2)),
+               case(cuts, cuts, a(3)),
+               case(cuts, cuts, max(3, 7, _)),
+               case(cuts, cuts, max(7, 3, _)),
+               case(cuts, cuts, max(7, 3, 3)),
+               case(cuts, cuts, classify(-1, _)),
+               case(cuts, cuts, classify(0, _)),
+               case(cuts, cuts, classify(5, _)),
+               case(cuts, cuts, classify(-1, pos)),
+               case(sample_program, sample_program, multi_fact(_)),
+               case(sample_program, sample_program, det_sum([1, 2, 3], _)),
+               case(sample_program, sample_program, det_sum([1, 2], 3)),
+               case(sample_program, sample_program, det_sum([1, 2], 4)),
+               case(output, output, gen(_)),
+               case(memo, memo, pick(2, _)),
+               case(memo, memo, pick(5, _))
+             ]).
 
 %  case(Example, ConvertedFile, Query): Query's converted form is the
 %  predicate Name__cp with the packet as an extra last argument.

@@ -17,7 +17,7 @@ jobs:
       - name: SWI-Prolog
         run: sudo apt-get update -qq && sudo apt-get install -y -qq swi-prolog-nox
       - name: Cut-free check of the Prolog sources
-        run: swipl tools/cutfree.pl -- src/detlog_runtime.pl tools/cutfree.pl tests/runtime_tests.pl tests/native_tests.pl
+        run: swipl tools/cutfree.pl -- src/detlog_runtime.pl tools/cutfree.pl tests/runtime_tests.pl tests/native_tests.pl docs/examples/*.pl
       - name: Runtime tests
         run: swipl tests/runtime_tests.pl
       - name: Build and test (Build.hs)
@@ -28,3 +28,5 @@ jobs:
           for f in splice cuts output sample_program; do ./build/detlog2 convert examples/$f.pl -o build/conv/$f.pl; done
           ./build/detlog2 memoise examples/memo.pl --goal 'pick(2, X)' --goal 'pick(5, X)' --complete -o build/conv/memo.pl
           swipl tests/native_tests.pl -- build/conv
+      - name: The compact Detlog forms of docs/examples.md on plain SWI-Prolog
+        run: swipl tests/native_tests.pl -- docs/examples sketch
