@@ -111,6 +111,50 @@ p__cp(A, Rows) :- if_commit(memo_lookup(A, Table, Rows), true, Fallback)
   with ordinary Prolog semantics and requires exactly the recorded packet,
   including output items. This is proof by evaluation.
 
+**S2A (unfolded data as a loop).**
+
+```prolog
+p__cp(A1, ..., An, Rows) :- s2a_rows(s2a(K, [Col1, ..., Coln]), [A1, ..., An], Rows)
+```
+
+Each column `Colj` is `newton(Ds)`, `const(T)` or `data(Vs)` (README, part 5).
+Row I, for I = 0 .. K-1, is `[v1(I), ..., vn(I)]` with
+`newton([D0, ..., Dd])` giving `D0 + D1*C(I,1) + ... + Dd*C(I,d)`, `const(T)`
+giving T and `data(Vs)` giving the I-th element of Vs.
+
+- **Purity.** p is pure: every clause of p, and of every predicate it calls,
+  uses only `,`, `;` (without `->`), `true`, `=/2`, `is/2`, the arithmetic
+  comparisons, `between/3`, `member/2`, `succ/2`, `plus/3` and calls to pure
+  predicates. The checker computes this itself, as the greatest set of
+  predicates closed under these conditions.
+- **Instance lemma.** Let p be pure and let ⟦p(A1..An)⟧ be finite, with
+  ground answers and no output. Then for every call p(T1..Tn),
+  ⟦p(T1..Tn)⟧ is ⟦p(A1..An)⟧ with the rows that do not unify with
+  `[T1..Tn]` left out, in the same order and with the same multiplicities,
+  whenever the call p(T1..Tn) raises no error.
+  *Reason:* every SLD derivation of the instance is an instance of a
+  derivation of the general goal, taken in the same order (lifting). For
+  the built-ins allowed above, binding an argument only removes answers,
+  never adds, reorders or duplicates them. Each general answer is ground,
+  so it yields at most one answer of the instance: the instance itself,
+  when it unifies. A rule that is not pure (a cut, `\+`, `->`, `var/1`,
+  output) can change with the binding, so it is excluded.
+- **Errors are not preserved.** A call whose argument makes a built-in raise
+  an error, such as `square(a, S)` reaching `between(0, 6, a)`, raises a type
+  error in Prolog but gives no rows from the loop. The lemma, and so the rule,
+  covers calls that raise no error.
+- **Check.** The checker checks the template (head variables distinct, the
+  argument list is the head arguments, one column per argument, a
+  well-formed spec), re-derives purity, re-runs p(A1..An) on the source
+  program with ordinary Prolog semantics, and requires its packet to be
+  exactly the K rows of the spec, in order: proof by evaluation.
+- **Runtime.** `s2a_rows/3` computes the K rows in a loop and keeps those that
+  unify with the call (`splice_extend/4`). When a column is
+  `newton([D0, D1])` with D1 ≠ 0 and the call gives that argument as an
+  integer X, it computes the single row I = (X − D0)/D1 when that is an
+  integer in 0 .. K−1, and no row otherwise. This is the same filter: the
+  only row whose column can equal X is row I.
+
 ## Goal rules
 
 In every goal rule, E is the environment row (the clause variables) and O is

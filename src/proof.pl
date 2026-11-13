@@ -86,7 +86,9 @@ check_proof(Ctx, Steps, Conv, E) :-
           E = left(M)).
 
 check_proof_(pctx(Src, Ext0, Orig), Steps, Conv, [Report]) :-
-    findall(K, ( member(comp(memo_table, [KT, atom(true), _]), Steps), term_key(KT, just(K)) ), CM0),
+    findall(K, ( member(comp(memo_table, [KT, atom(true), _]), Steps), term_key(KT, just(K)) ), CM1),
+    findall(K, ( member(comp(s2a_table, [KT, _]), Steps), term_key(KT, just(K)) ), CS0),
+    conc(CM1, CS0, CM0),
     sort(CM0, CM),
     ord_union(Ext0, CM, Ext),
     Ctx = pctx(Src, Ext, Orig),
@@ -98,6 +100,7 @@ check_proof_(pctx(Src, Ext0, Orig), Steps, Conv, [Report]) :-
     findall(S, ( member(S, Steps), S = comp(clause_packet, _) ), ClauseSteps),
     findall(S, ( member(S, Steps), S = comp(aux, _) ), AuxSteps),
     findall(S, ( member(S, Steps), S = comp(memo_table, _) ), MemoSteps),
+    findall(S, ( member(S, Steps), S = comp(s2a_table, _) ), S2ASteps),
     % 1. the compiled clauses are the cut-free intermediate clauses
     maplist(intermediate_of(Base, ClauseSteps, SpecTable), PredSteps, InterPairs),
     map_from_pairs(InterPairs, Inter),
@@ -120,6 +123,7 @@ check_proof_(pctx(Src, Ext0, Orig), Steps, Conv, [Report]) :-
     maplist(check_clause_step(Cx0), ClauseSteps, ClauseCls),
     maplist(check_aux_step(Cx0), AuxSteps, AuxCls),
     maplist(check_memo_step(Ctx), MemoSteps, MemoCls),
+    maplist(check_s2a_step(Ctx), S2ASteps, S2ACls),
     % 3. coverage: the converted program is exactly the justified clauses
     findall(CF-CFC, ( member(comp(memo_table, [KT, C, _]), MemoSteps), term_key(KT, just(F/_)),
                       C \== atom(true), cp_name(F, CF), atom_concat(CF, '__compute', CFC) ), Renamed),
@@ -128,7 +132,8 @@ check_proof_(pctx(Src, Ext0, Orig), Steps, Conv, [Report]) :-
     concat_lists([PC1|ClauseCls], J1),
     concat_lists(AuxCls, J2),
     concat_lists(MemoCls, J3),
-    concat_lists([J1, J2, J3], Justified),
+    concat_lists(S2ACls, J4),
+    concat_lists([J1, J2, J3, J4], Justified),
     by_key(Justified, ByKey),
     program_clauses(Conv, ConvKCs),
     maplist(coverage(ByKey), ConvKCs),

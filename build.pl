@@ -41,7 +41,7 @@ mode(Args) :-
 sources(['detlog2.pl', 'build.pl', 'src/detlog_runtime.pl', 'src/term.pl', 'src/stream.pl',
          'src/reader.pl', 'src/pretty.pl', 'src/builtins.pl', 'src/prelude.pl', 'src/interp.pl',
          'src/reference.pl', 'src/cut_elim.pl', 'src/convert.pl', 'src/check.pl', 'src/proof.pl',
-         'src/proof_steps.pl', 'src/memo.pl', 'src/cli.pl', 'tools/cutfree.pl',
+         'src/proof_steps.pl', 'src/memo.pl', 'src/unfold.pl', 'src/cli.pl', 'tools/cutfree.pl',
          'tests/runtime_tests.pl', 'tests/native_tests.pl', 'tests/cli.pl', 'io/ios.pl',
          'docs/examples/splice.pl', 'docs/examples/cuts.pl', 'docs/examples/sample_program.pl',
          'docs/examples/output.pl', 'docs/examples/memo.pl']).
@@ -59,7 +59,8 @@ converted_examples :-
     make_directory_path('build/conv'),
     maplist(convert_example, [splice, cuts, output, sample_program]),
     run('./build/detlog2', [memoise, 'examples/memo.pl', '--goal', 'pick(2, X)', '--goal', 'pick(5, X)',
-                            '--complete', '-o', 'build/conv/memo.pl']).
+                            '--complete', '-o', 'build/conv/memo.pl']),
+    run('./build/detlog2', [unfold, 'examples/unfold.pl', '-o', 'build/conv/unfold.pl']).
 
 convert_example(E) :-
     format(atom(In), "examples/~w.pl", [E]),

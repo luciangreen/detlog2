@@ -27,6 +27,7 @@ relation(_).            % :- relation(Name/Arity) marks a relation (tools/cutfre
 :- ensure_loaded(src/proof).
 :- ensure_loaded(src/proof_steps).
 :- ensure_loaded(src/memo).
+:- ensure_loaded(src/unfold).
 :- ensure_loaded(src/cli).
 
 :- initialization(main, main).

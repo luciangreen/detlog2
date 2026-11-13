@@ -4,7 +4,8 @@
     swipl tests/native_tests.pl -- docs/examples sketch
 
     CONVERTED_DIR holds the converter's output for the examples
-    (splice.pl, cuts.pl, output.pl, sample_program.pl and memo.pl).  For
+    (splice.pl, cuts.pl, output.pl, sample_program.pl, memo.pl and
+    unfold.pl).  For
     every query, the original program runs on SWI-Prolog itself (with its
     cuts), the converted program runs with src/detlog_runtime.pl only, and
     the two must give the same answers, in the same order, with the same
@@ -97,7 +98,23 @@ cases([ case(splice, splice, c(_, _)),
         case(sample_program, sample_program, safe_cut(0)),
         case(sample_program, sample_program, side_effect(hello)),
         case(memo, memo, pick(2, _)),
-        case(memo, memo, pick(5, _))
+        case(memo, memo, pick(5, _)),
+        case(unfold, unfold, step(_, _)),
+        case(unfold, unfold, step(_, 13)),
+        case(unfold, unfold, step(9, _)),
+        case(unfold, unfold, square(_, 25)),
+        case(unfold, unfold, square(4, _)),
+        case(unfold, unfold, triangle(_, _)),
+        case(unfold, unfold, cube(3, _)),
+        case(unfold, unfold, colour(_, blue)),
+        case(unfold, unfold, pair(_, _, _)),
+        case(unfold, unfold, two_steps(_, _)),
+        case(unfold, unfold, anc(ann, _)),
+        case(unfold, unfold, anc(_, dee)),
+        case(unfold, unfold, anc(bob, cy)),
+        case(unfold, unfold, either(_)),
+        case(unfold, unfold, either(1)),
+        case(unfold, unfold, first_colour(_))
       ]).
 
 run_cases([], _, P, F, P, F).

@@ -19,6 +19,9 @@ usage_text(T) :-
       "                                                compare answers and output with the source",
       "  detlog2 memoise FILE --goal G ... [--complete] [-o OUT] [--check Q ...]",
       "                                                expand calls into answer tables",
+      "  detlog2 unfold FILE [--max N] [-o OUT] [--check Q ...]",
+      "                                                unfold every pure predicate into its answer table,",
+      "                                                then replace each table by an S2A loop (no choicepoints)",
       "  detlog2 mnns FILE [--mnns DIR] [-o OUT] [--check Q ...]",
       "                                                rewrite with mnns optimise.pl, then convert",
       "",
@@ -157,6 +160,7 @@ command('packets/2', [File, Q], Fl, packets_command(File, Q, Fl)).
 command('memoise/1', [File], Fl, memoise_command(File, Fl)).
 command('memoize/1', [File], Fl, memoise_command(File, Fl)).
 command('mnns/1', [File], Fl, mnns_command(File, Fl)).
+command('unfold/1', [File], Fl, unfold_command(File, Fl)).
 
 run_command(File, Q, Fl) :-
     load_program(File, P),
@@ -534,5 +538,82 @@ mnns_check(Fl, Orig, P, Q, Ok) :-
                 length(Vars, K),
                 converted_outcome(Opts, Max, CP, K, Out),
                 check_deterministic(CP, Problems),
+                report_outcome(Q, Rep, Problems, Src, Out, Ok) ),
+              ( E = left(M), format("FAIL ~s: ~s~n", [Q, M]), Ok = false )).
+
+% ---------------------------------------------------------------------------
+% unfold: answer tables of pure predicates, as S2A loops (src/unfold.pl)
+
+unfold_command(File, Fl) :-
+    load_program(File, P),
+    unfold_max(Fl, Max),
+    unfold_tables(P, Max, Entries, UEvs),
+    pairs_keys(Entries, Keys0),
+    sort(Keys0, Keys),
+    drop_preds(Keys, P, P1),
+    unfold_build(Fl, Keys, Entries, P, P1, E),
+    either_or_die(E, cres(_, CEvs, _)-Prog-Steps-Report),
+    concat_lists([UEvs, CEvs, Report], Events),
+    write_converted(Fl, File, Events, Prog, Steps),
+    fl_checks(Fl, Checks),
+    maplist(unfold_check(Fl, Keys, Entries, P, P1), Checks, Oks),
+    if_commit(memberchk(false, Oks), throw(cli_exit(1)), true).
+
+%  The row limit: --max N, or 1000 when --max is not given.
+unfold_max(Fl, Max) :-
+    fl_max(Fl, M0),
+    default_flags(D),
+    fl_max(D, MD),
+    if_commit(M0 =:= MD, Max = 1000, Max = M0).
+
+%  unfold_tables(+Program, +Max, -Entries, -Events): Key-Spec for every pure
+%  predicate whose most general goal is a finite table of ground answers.
+unfold_tables(P, Max, Entries, Events) :-
+    pure_preds(P, Pure),
+    prog_order(P, Order),
+    foldl(unfold_pred(P, Max, Pure), Order, []-[], Entries-Events).
+
+unfold_pred(P, Max, Pure, F/N, E0-V0, E-V) :-
+    if_commit(ord_memberchk(F/N, Pure),
+              ( general_table(P, Max, F/N, TE), unfold_table(TE, F/N, E0-V0, E-V) ),
+              ( format(string(L), "kept ~w/~d: not pure (a cut, negation, if-then-else, type test or output, or a call to such a predicate)", [F, N]),
+                E = E0, conc(V0, [L], V) )).
+
+unfold_table(left(Why), F/N, E0-V0, E0-V) :-
+    format(string(L), "kept ~w/~d: not unfolded: ~s", [F, N, Why]),
+    conc(V0, [L], V).
+unfold_table(right(Rows), F/N, E0-V0, E-V) :-
+    s2a_spec(N, Rows, Spec),
+    length(Rows, K),
+    spec_text(N, Spec, T),
+    if_commit(K =:= 1, RW = "row", RW = "rows"),
+    format(string(L), "unfolded ~w/~d: ~d ~s; S2A loop ~s", [F, N, K, RW, T]),
+    conc(E0, [(F/N)-Spec], E),
+    conc(V0, [L], V).
+
+unfold_build(Fl, Keys, Entries, Orig, Prog, E) :-
+    fl_splice(Fl, S),
+    convert_program(copts(S, Keys, nothing), Prog, CE),
+    if_commit(CE = right(Conv),
+              ( Conv = cres(CP, _, Proof),
+                add_s2a_tables(Entries, CP, UProg, S2ASteps),
+                conc(Proof, S2ASteps, Steps),
+                check_proof(pctx(Prog, Keys, Orig), Steps, UProg, PE),
+                if_commit(PE = right(Report),
+                          E = right(Conv-UProg-Steps-Report),
+                          ( PE = left(M), string_concat("proof rejected: ", M, M1), E = left(M1) )) ),
+              ( CE = left(M), string_concat("conversion failed: ", M, M1), E = left(M1) )).
+
+unfold_check(Fl, Keys, Entries, P, P1, Q, Ok) :-
+    parse_q(Q, G, Vs, NV),
+    pairs_values(Vs, Vars),
+    add_query_clause(G, Vars, NV, P1, PQ, _),
+    unfold_build(Fl, Keys, Entries, P, PQ, E),
+    if_commit(E = right(_-Prog-_-Rep),
+              ( fl_max(Fl, Max), default_options(Opts),
+                source_outcome(Opts, Max, P, G, Vars, NV, Src),
+                length(Vars, K),
+                converted_outcome(Opts, Max, Prog, K, Out),
+                check_deterministic(Prog, Problems),
                 report_outcome(Q, Rep, Problems, Src, Out, Ok) ),
               ( E = left(M), format("FAIL ~s: ~s~n", [Q, M]), Ok = false )).
