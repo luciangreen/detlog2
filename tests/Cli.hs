@@ -1,7 +1,6 @@
 -- | End-to-end tests of the detlog2 command line.  Run by Build.hs.
 module Main (main) where
 
-import Control.Monad (unless, when)
 import Data.IORef
 import Data.List (isInfixOf)
 import System.Directory (doesFileExist, findExecutable)
@@ -33,15 +32,9 @@ main = do
         o <- out args
         let o' = reverse (dropWhile (== '\n') (reverse o))
         report name (o' == want) ("wanted:\n" ++ want ++ "\ngot:\n" ++ o')
-      expectNot name bad args = do
-        o <- out args
-        report name (not (bad `isInfixOf` o)) o
       fileHas name want path = do
         s <- readFile path
         report name (want `isInfixOf` s) s
-      fileLacks name bad path = do
-        s <- readFile path
-        report name (not (bad `isInfixOf` s)) s
 
   -- the cutless interpreter ---------------------------------------------------
   expectExact "run: member order" "X = 1.\nX = 2.\nX = 3." ["run", "examples/sample_program.pl", "member(X, [1,2,3])"]
@@ -159,9 +152,6 @@ main = do
   if n == 0 then putStrLn "all CLI tests passed" else do
     putStrLn (show n ++ " CLI test(s) failed")
     exitWith (ExitFailure 1)
-  where
-    _unused = (unless, when, expectNotUnused)
-    expectNotUnused = ()
 
 replaceFirst :: String -> String -> String -> String
 replaceFirst old new = go
