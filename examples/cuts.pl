@@ -24,3 +24,6 @@ two(none, none).
 
 % A cut inside \+ is local to it.
 no_big(L) :- \+ (member(X, L), X > 5, !).
+
+% "!" here is data (a character list), not a cut.
+bang(Out) :- append("Hi", "!", Out).

@@ -34,6 +34,7 @@ expect_exact "run: if-then-else" "Y = nonpos." $D run examples/sample_program.pl
 expect_exact "run: findall" "L = [2, 4, 6]." $D run examples/sample_program.pl 'findall(Y, (member(X, [1,2,3]), Y is X * 2), L)'
 expect_exact "run: output" "$(printf 'hello\ntrue.')" $D run examples/sample_program.pl 'side_effect(hello)'
 expect_exact "ref: cut semantics" "true." $D ref examples/sample_program.pl 'safe_cut(1)'
+expect_exact "run: a \"!\" string is data, not a cut" "O = ['H', i, !]." $D run examples/cuts.pl 'bang(O)'
 expect_exact "ref: red cut max" "Z = 5." $D ref examples/cuts.pl 'max(5, 3, Z)'
 
 # --- conversion --------------------------------------------------------------
@@ -62,7 +63,7 @@ expect "check: sample" "all checks passed" $D check examples/sample_program.pl \
   'if_then_else(0, Y)' 'safe_cut(1)' 'safe_cut(-1)' 'side_effect(hi)'
 expect "check: cuts" "all checks passed" $D check examples/cuts.pl \
   'a(X)' 'max(5, 3, Z)' 'max(2, 3, Z)' 'max(5, 3, 3)' 'classify(-4, C)' 'classify(0, C)' 'classify(7, C)' \
-  'firsts([1,2,3], F)' 'two(X, Y)' 'no_big([1,2])' 'no_big([1,9])'
+  'firsts([1,2,3], F)' 'two(X, Y)' 'no_big([1,2])' 'no_big([1,9])' 'bang(O)'
 expect "check: splice" "all checks passed" $D check examples/splice.pl \
   'c(A, B)' 'c(1, B)' 'c(A, A)' 'triple(X, Y, Z)' 'q(X, Y)' 'c(A, B), A < B'
 expect "check: library" "all checks passed" $D check examples/sample_program.pl \

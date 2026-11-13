@@ -40,10 +40,16 @@ showCutEvent e = case e of
   LocalCutRemoved (f, n) i -> "local_cut_to_if_commit(" ++ f ++ "/" ++ show n ++ ", clause " ++ show i ++ ")"
   UnsupportedCut (f, n) i why -> "unsupported_cut(" ++ f ++ "/" ++ show n ++ ", clause " ++ show i ++ "): " ++ why
 
+-- | A cut in a goal position (data such as the string "!" is not a cut).
 hasCut :: Term -> Bool
-hasCut (Atom "!") = True
-hasCut (Comp _ as) = any hasCut as
-hasCut _ = False
+hasCut t = case t of
+  Atom "!" -> True
+  Comp op [a, b] | op `elem` [",", ";", "->", "*->", "forall"] -> hasCut a || hasCut b
+  Comp "if_commit" [a, b, c] -> hasCut a || hasCut b || hasCut c
+  Comp f [a] | f `elem` ["\\+", "not", "once", "once_det", "ignore", "call"] -> hasCut a
+  Comp "findall" [_, g, _] -> hasCut g
+  Comp "aggregate_all" [_, g, _] -> hasCut g
+  _ -> False
 
 -- | Remove every cut from a program.  Returns the cut-free program and the
 -- events; Left lists unsupported placements.
