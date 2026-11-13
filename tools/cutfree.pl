@@ -55,9 +55,10 @@ check_file(File, K) :-
     setup_call_cleanup(open(File, read, S),
                        read_all(S, Terms),
                        close(S)),
+    relations_of(Terms, Rels),
     clauses_of(Terms, Clauses),
-    body_problems(Clauses, P1),
-    index_problems(Clauses, P2),
+    body_problems(Clauses, Rels, P1),
+    index_problems(Clauses, Rels, P2),
     conc_det(P1, P2, Ps),
     print_problems(Ps, File),
     length(Ps, K).
@@ -67,6 +68,18 @@ read_all(S, Terms) :-
     if_commit(T == end_of_file,
               Terms = [],
               ( Terms = [T|Ts], read_all(S, Ts) )).
+
+%  relations_of(+Terms, -Keys): predicates declared with
+%  :- relation(Name/Arity).  A relation may have several matching clauses;
+%  it is only called where its answers are collected or committed
+%  (findall/3, an if_commit/3 condition), so its body is checked as a
+%  collected goal and rule 3 does not apply to it.
+relations_of([], []).
+relations_of([T|Ts], Rs) :-
+    if_commit(T = (:- relation(F/N)),
+              ( format(atom(K), "~w/~w", [F, N]), Rs = [K|Rs1] ),
+              Rs = Rs1),
+    relations_of(Ts, Rs1).
 
 % Clauses as Head-Body, directives dropped.
 clauses_of([], []).
@@ -87,11 +100,13 @@ clause_add(fact, H, [H-true|Cs], Cs).
 % ---------------------------------------------------------------------------
 % Rules 1 and 2
 
-body_problems([], []).
-body_problems([H-B|Cs], Ps) :-
+body_problems([], _, []).
+body_problems([H-B|Cs], Rels, Ps) :-
     functor(H, F, N),
-    goal_problems(B, plain, F/N, P1),
-    body_problems(Cs, P2),
+    format(atom(K), "~w/~w", [F, N]),
+    if_commit(memberchk(K, Rels), Ctx = collect, Ctx = plain),
+    goal_problems(B, Ctx, F/N, P1),
+    body_problems(Cs, Rels, P2),
     conc_det(P1, P2, Ps).
 
 %  Ctx: plain (the goal must be deterministic) or collect (its answers are
@@ -151,6 +166,7 @@ meta_spec('setup_call_cleanup/3', [g, g, g]).
 meta_spec('call_cleanup/2', [g, g]).
 meta_spec('builtin_rows/2', [c, -]).
 meta_spec('effect_text/2', [g, -]).
+meta_spec('test/2', [c, -]).
 
 generator('member/2').
 generator('select/3').
@@ -172,11 +188,17 @@ generator('nb_current/2').
 % ---------------------------------------------------------------------------
 % Rule 3
 
-index_problems(Clauses, Ps) :-
-    keyed(Clauses, Keyed),
+index_problems(Clauses, Rels, Ps) :-
+    keyed(Clauses, Keyed0),
+    not_relations(Keyed0, Rels, Keyed),
     msort(Keyed, Sorted),
     group_keys(Sorted, Groups),
     groups_problems(Groups, Ps).
+
+not_relations([], _, []).
+not_relations([K-V|KVs], Rels, Out) :-
+    if_commit(memberchk(K, Rels), Out = Out1, Out = [K-V|Out1]),
+    not_relations(KVs, Rels, Out1).
 
 keyed([], []).
 keyed([H-_|Cs], [Key-FirstArg|Ks]) :-

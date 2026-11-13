@@ -194,9 +194,9 @@ strip_zeros_front([C|Cs], Out) :-
     if_commit(C =:= 0'0, strip_zeros_front(Cs, Out), Out = [C|Cs]).
 
 format_digits(Ds, E, S) :-
-    if_commit(( E < 0 ; E > 7 ),
+    if_commit(E < 0,
               exponent_form(Ds, E, S),
-              fixed_form(Ds, E, S)).
+              if_commit(E > 7, exponent_form(Ds, E, S), fixed_form(Ds, E, S))).
 
 exponent_form([D|Ds], E, S) :-
     E1 is E - 1,
@@ -212,9 +212,13 @@ fixed_form(Ds, E, S) :-
                 mk0(Int, I1), mk0(Frac, F1),
                 concat_lists([I1, `.`, F1], All), string_codes(S, All) )).
 
-fixed_split(0, Rs, [], Rs).
-fixed_split(N, Rs, [R|Int], Frac) :-
-    N > 0,
+fixed_split(N, Rs, Int, Frac) :-
+    compare(O, N, 0),
+    fixed_split_(O, N, Rs, Int, Frac).
+
+fixed_split_(=, _, Rs, [], Rs).
+fixed_split_(<, _, Rs, [], Rs).
+fixed_split_(>, N, Rs, [R|Int], Frac) :-
     N1 is N - 1,
     first_or_zero(Rs, R, Rest),
     fixed_split(N1, Rest, Int, Frac).
@@ -328,12 +332,15 @@ assign_name(Occs, var(I, N), Used-M0, Used1-M) :-
     if_commit(C =:= 1,
               ( Used1 = Used, map_put(I, "_", M0, M) ),
               ( atom_string(N, NS),
-                if_commit(( valid_name(N), \+ memberchk(NS, Used) ),
+                if_commit(( valid_name(N), not_member(NS, Used) ),
                           ( Used1 = [NS|Used], map_put(I, NS, M0, M) ),
                           ( if_commit(valid_name(N), Base = NS, Base = "V"),
                             fresh_name(Base, 1, Used, Cand),
                             Used1 = [Cand|Used],
                             map_put(I, Cand, M0, M) )) )).
+
+not_member(X, L) :-
+    if_commit(memberchk(X, L), fail, true).
 
 valid_name(N) :-
     atom_codes(N, [C|Cs]),
