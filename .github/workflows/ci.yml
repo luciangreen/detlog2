@@ -1,11 +1,11 @@
 name: ci
 on:
   push:
-    branches: [main, prolog]
+    branches: [main]
   pull_request:
   workflow_dispatch:
 permissions:
-  contents: write
+  contents: read
 jobs:
   build-test:
     runs-on: ubuntu-latest
@@ -16,31 +16,15 @@ jobs:
           ghc-version: '9.6'
       - name: SWI-Prolog
         run: sudo apt-get update -qq && sudo apt-get install -y -qq swi-prolog-nox
-      - name: Prolog runtime (cut-free check, tests)
-        run: |
-          swipl --version
-          swipl tools/cutfree.pl -- src/detlog_runtime.pl tools/cutfree.pl tests/runtime_tests.pl > rt.log 2>&1; echo "exit $?" >> rt.log
-          swipl tests/runtime_tests.pl >> rt.log 2>&1; echo "exit $?" >> rt.log
-          cat rt.log
+      - name: Cut-free check of the Prolog sources
+        run: swipl tools/cutfree.pl -- src/detlog_runtime.pl tools/cutfree.pl tests/runtime_tests.pl tests/native_tests.pl
+      - name: Runtime tests
+        run: swipl tests/runtime_tests.pl
       - name: Build and test (Build.hs)
-        run: runghc Build.hs ci > ci.log 2>&1; echo "exit $?" >> ci.log; tail -5 ci.log
-      - name: Converted programs on plain SWI-Prolog
+        run: runghc Build.hs ci
+      - name: Converted examples on plain SWI-Prolog
         run: |
-          mkdir -p "$RUNNER_TEMP/log/conv"
-          for f in splice cuts output sample_program; do ./build/detlog2 convert examples/$f.pl -o "$RUNNER_TEMP/log/conv/$f.pl" > "$RUNNER_TEMP/log/conv/$f.txt" 2>&1 || true; done
-          ./build/detlog2 memoise examples/memo.pl --goal 'pick(2, X)' --goal 'pick(5, X)' --complete -o "$RUNNER_TEMP/log/conv/memo.pl" > "$RUNNER_TEMP/log/conv/memo.txt" 2>&1 || true
-          swipl tools/cutfree.pl -- tests/native_tests.pl > native.log 2>&1; echo "exit $?" >> native.log
-          swipl tests/native_tests.pl -- "$RUNNER_TEMP/log/conv" >> native.log 2>&1; echo "exit $?" >> native.log
-          cat native.log
-      - name: TEMPORARY publish logs and converter listings
-        if: always() && github.event_name == 'push'
-        run: |
-          mkdir -p "$RUNNER_TEMP/log/conv"
-          for f in splice cuts output sample_program; do ./build/detlog2 convert examples/$f.pl -o "$RUNNER_TEMP/log/conv/$f.pl" > "$RUNNER_TEMP/log/conv/$f.txt" 2>&1 || true; done
-          ./build/detlog2 memoise examples/memo.pl --goal 'pick(2, X)' --goal 'pick(5, X)' --complete -o "$RUNNER_TEMP/log/conv/memo.pl" > "$RUNNER_TEMP/log/conv/memo.txt" 2>&1 || true
-          ./build/detlog2 packets examples/splice.pl 'c(A, B)' > "$RUNNER_TEMP/log/conv/packets.txt" 2>&1 || true
-          ./build/detlog2 check examples/cuts.pl 'a(X)' 'max(3, 7, Z)' 'classify(0, C)' > "$RUNNER_TEMP/log/conv/check.txt" 2>&1 || true
-          cp rt.log ci.log native.log "$RUNNER_TEMP/log/" || true
-          cd "$RUNNER_TEMP/log"; echo "${{ github.sha }}" > status.txt
-          git init -q && git checkout -q -b ci-log && git add . && git -c user.name=ci -c user.email=ci@users.noreply.github.com commit -qm log
-          git push -qf "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" ci-log
+          mkdir -p build/conv
+          for f in splice cuts output sample_program; do ./build/detlog2 convert examples/$f.pl -o build/conv/$f.pl; done
+          ./build/detlog2 memoise examples/memo.pl --goal 'pick(2, X)' --goal 'pick(5, X)' --complete -o build/conv/memo.pl
+          swipl tests/native_tests.pl -- build/conv

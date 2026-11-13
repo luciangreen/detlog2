@@ -213,6 +213,25 @@ still runs.
 | `rows_concat(Lists, Rows)` | concatenate packets |
 | `if_commit(C, T, E)`, `once_det(G)`, `decision(Cases, Default)` | commitment without cut |
 | `memo_lookup/3`, `memo_miss/2` | memo tables |
+| `cp_filter(P, Pattern, Rows)` | the rows of a fact packet that unify with Pattern |
+| `splice_safe(Groups)` | the groups share no unbound variable, so they can be spliced |
+| `length_det/2`, `builtin_rows/2`, `effect_text/2`, `packet_first/3`, `packet_split/3` | deterministic built-in modes, output as data, packet access |
+
+### The runtime in plain Prolog
+
+[`src/detlog_runtime.pl`](src/detlog_runtime.pl) implements every construct above as an SWI-Prolog module, so converted programs run without detlog2.
+
+The library is written in the style it supports:
+
+- no cut, `;`, `->`, `\+` or `once/1`;
+- clauses are told apart by their first argument, so first-argument indexing leaves no choicepoint;
+- `if_commit/3` takes the first answer of its condition with `findall/3` over `limit/2`.
+
+`swipl tools/cutfree.pl -- FILE...` checks these rules. `swipl tests/runtime_tests.pl` runs the runtime's tests, each of which must leave no choicepoint.
+
+[`tests/native_tests.pl`](tests/native_tests.pl) runs every converted example on plain SWI-Prolog. It compares each query with the original program, cuts included, run on SWI-Prolog itself.
+
+See [docs/examples.md](docs/examples.md) for the input Prolog and output Detlog of every example, and [docs/report.md](docs/report.md) for what detlog2 does and does not optimise.
 
 ## Layout
 
@@ -233,6 +252,12 @@ src/Detlog2/Mnns.hs       mnns optimise.pl bridge
 src/Detlog2/Equiv.hs      answer-sequence comparison
 app/Main.hs               command line
 tests/Cli.hs              end-to-end tests (run by Build.hs and GitHub Actions)
+src/detlog_runtime.pl     the Detlog runtime as a cut-free SWI-Prolog module
+tools/cutfree.pl          cut-free / choicepoint-free source checker
+tests/runtime_tests.pl    runtime tests on SWI-Prolog
+tests/native_tests.pl     converted examples on plain SWI-Prolog vs the originals
+docs/examples.md          input Prolog and output Detlog for every example
+docs/report.md            does detlog2 work, and does it optimise?
 Build.hs                  build and test
 ```
 
