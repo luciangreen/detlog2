@@ -9,6 +9,7 @@
 */
 
 :- use_module(src/detlog_runtime).
+:- use_module(library(process)).
 
 relation(_).            % :- relation(Name/Arity) marks a relation (tools/cutfree.pl)
 
@@ -20,6 +21,12 @@ relation(_).            % :- relation(Name/Arity) marks a relation (tools/cutfre
 :- ensure_loaded(src/prelude).
 :- ensure_loaded(src/interp).
 :- ensure_loaded(src/reference).
+:- ensure_loaded(src/cut_elim).
+:- ensure_loaded(src/convert).
+:- ensure_loaded(src/check).
+:- ensure_loaded(src/proof).
+:- ensure_loaded(src/proof_steps).
+:- ensure_loaded(src/memo).
 :- ensure_loaded(src/cli).
 
 :- initialization(main, main).
