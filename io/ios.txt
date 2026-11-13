@@ -1,4 +1,4 @@
-detlog2: 200 inputs and outputs, from real runs (runghc Build.hs ios writes this file; runghc Build.hs check-ios checks it).
+detlog2: 200 inputs and outputs, from real runs (swipl io/ios.pl make writes this file; swipl io/ios.pl check checks it).
 
 1. detlog2 ref examples/cuts.pl 'max(1, 3, Z)'
    => Z = 3.

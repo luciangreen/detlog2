@@ -4,6 +4,9 @@
     swipl io/ios.pl make           runs the 200 inputs and writes io/ios.txt
     swipl io/ios.pl check          runs them again and fails if any output changed
     swipl io/ios.pl write FILE     writes the outputs to FILE
+    swipl io/ios.pl compare FILE   checks that io/ios.txt and FILE record the
+                                   same outputs (the header line aside), for
+                                   the Haskell recording haskell/io/ios.txt
 
     The inputs are made the same way every time (see case_for/2).  Each
     output is everything the command printed (standard output, then
@@ -21,6 +24,19 @@ binary('./build/detlog2').
 main :-
     current_prolog_flag(argv, Argv),
     drop_dashes(Argv, Args),
+    if_commit(Args = [compare, Other], compare_files(Other), run_and_render(Args)).
+
+compare_files(Other) :-
+    read_file_to_string("io/ios.txt", A, [encoding(utf8)]),
+    read_file_to_string(Other, B, [encoding(utf8)]),
+    split_string(A, "\n", "", [_|AL]),
+    split_string(B, "\n", "", [_|BL]),
+    if_commit(AL == BL,
+              format("io/ios.txt and ~w record the same 200 outputs.~n", [Other]),
+              ( differing(AL, BL, 2, Ds), take(20, Ds, D20), maplist(show_diff, D20),
+                format("io/ios.txt and ~w differ.~n", [Other]), halt(1) )).
+
+run_and_render(Args) :-
     run_all(Outs),
     render(Outs, Text),
     ios_mode(Args, Text).

@@ -9,7 +9,7 @@ import System.Exit
 import System.Process (readProcessWithExitCode)
 
 detlog2 :: FilePath
-detlog2 = "./build/detlog2"
+detlog2 = "./build/hs/detlog2"
 
 main :: IO ()
 main = do

@@ -1,13 +1,21 @@
 name: ci
 on:
   push:
-    branches: [main]
+    branches: [main, prolog]
   pull_request:
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  build-test:
+  prolog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: SWI-Prolog
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq swi-prolog-nox
+      - name: Build and test (build.pl)
+        run: swipl build.pl ci
+  haskell:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,17 +24,7 @@ jobs:
           ghc-version: '9.6'
       - name: SWI-Prolog
         run: sudo apt-get update -qq && sudo apt-get install -y -qq swi-prolog-nox
-      - name: Cut-free check of the Prolog sources
-        run: swipl tools/cutfree.pl -- src/detlog_runtime.pl tools/cutfree.pl tests/runtime_tests.pl tests/native_tests.pl docs/examples/*.pl
-      - name: Runtime tests
-        run: swipl tests/runtime_tests.pl
-      - name: Build and test (Build.hs)
-        run: runghc Build.hs ci
-      - name: Converted examples on plain SWI-Prolog
-        run: |
-          mkdir -p build/conv
-          for f in splice cuts output sample_program; do ./build/detlog2 convert examples/$f.pl -o build/conv/$f.pl; done
-          ./build/detlog2 memoise examples/memo.pl --goal 'pick(2, X)' --goal 'pick(5, X)' --complete -o build/conv/memo.pl
-          swipl tests/native_tests.pl -- build/conv
-      - name: The compact Detlog forms of docs/examples.md on plain SWI-Prolog
-        run: swipl tests/native_tests.pl -- docs/examples sketch
+      - name: Build and test the Haskell version (haskell/Build.hs)
+        run: runghc haskell/Build.hs ci
+      - name: The Prolog and Haskell versions record the same 200 outputs
+        run: swipl io/ios.pl compare haskell/io/ios.txt

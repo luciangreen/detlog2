@@ -112,10 +112,16 @@ drop_newlines([C|Cs], Out) :-
     if_commit(C =:= 0'\n, drop_newlines(Cs, Out), Out = [C|Cs]).
 
 replace_first(S, Old, New, S1) :-
-    if_commit(sub_string(S, B, L, A, Old),
-              ( sub_string(S, 0, B, _, Before), Start is B + L, sub_string(S, Start, A, 0, After),
-                atomic_list_concat([Before, New, After], X), atom_string(X, S1) ),
+    string_codes(S, Cs),
+    string_codes(Old, OCs),
+    string_codes(New, NCs),
+    if_commit(( append(Before, Rest, Cs), append(OCs, After, Rest) ),
+              ( conc(Before, NCs, P1), conc(P1, After, R), string_codes(S1, R) ),
               S1 = S).
+
+conc([], L, L).
+conc([X|Xs], L, [X|Ys]) :-
+    conc(Xs, L, Ys).
 
 mnns_actions(Dir, [
     write_file("build/mnns_in.pl", "num(1). num(2). num(3).\nbig(R) :- findall(X, (num(X), X > 1), R).\npos(X) :- X > 0, !.\n"),
