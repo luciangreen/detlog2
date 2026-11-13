@@ -69,6 +69,7 @@ detlogRuntimeKeys =
   [ ("member_cp", 2), ("between_cp", 3), ("cp_rows", 2), ("splice", 2)
   , ("splice_first", 2), ("splice_extend", 4), ("rows_concat", 2)
   , ("cp_filter", 3), ("splice_safe", 1), ("memo_lookup", 3), ("memo_miss", 2)
+  , ("length_det", 2), ("builtin_rows", 2)
   ]
 
 -- | Built-ins with side effects (output).
@@ -190,6 +191,8 @@ builtinTable = M.fromList
                                               Comp "cp" [rows] -> spliceExtendB [rows, pat, pat, out] st
                                               t -> typeErr "choice packet cp/1" t)
   , (("splice_safe", 1), spliceSafeB)
+  , (("length_det", 2), lengthDetB)
+  , (("builtin_rows", 2), builtinRowsB)
   , (("memo_lookup", 3), memoLookupB)
   , (("memo_miss", 2), \[k, a] st -> [Err ("memo_miss: " ++ showTermQ (resolve st k)
                                            ++ " was memoised as complete, but has no entry for "
@@ -746,3 +749,32 @@ memoLookupB [args, table, rows] st = case termToList st table of
         let (c, st') = copyTerm st rs in fromMaybeU (unify rows c st')
       _ -> go es
 memoLookupB _ _ = []
+
+-- | length/2 restricted to its deterministic modes.
+lengthDetB :: [Term] -> State -> Stream
+lengthDetB [l, n] st =
+  let (_, end) = partialList st l
+  in case (end, walk st n) of
+       (Var _ _, Var _ _) -> [Err "length_det/2: list and length both unbound (that mode needs a choicepoint)"]
+       _ -> lengthB [l, n] st
+lengthDetB _ _ = []
+
+-- | builtin_rows(+Goal, -Rows): all answers of a built-in goal as one
+-- packet of rows [[Goal1], [Goal2], ...].  Deterministic.
+builtinRowsB :: [Term] -> State -> Stream
+builtinRowsB [g, rows] st = case walk st g of
+  Comp f as -> case builtin f as st of
+    Just s -> case [ e | Err e <- s ] of
+      (e : _) -> [Err e]
+      [] -> let rs = [ mkList [resolve s' (Comp f as)] (Atom "[]") | Ans s' <- s ]
+                outs = [ Out o | Out o <- s ]
+                (copies, st') = copyAll st rs
+            in outs ++ fromMaybeU (unify rows (mkList copies (Atom "[]")) st')
+    Nothing -> [Err ("builtin_rows/2: not a built-in: " ++ f)]
+  t -> typeErr "built-in goal" t
+  where
+    copyAll s [] = ([], s)
+    copyAll s (y : ys) = let (c, s1) = copyTerm s y
+                             (cs, s2) = copyAll s1 ys
+                         in (c : cs, s2)
+builtinRowsB _ _ = []
