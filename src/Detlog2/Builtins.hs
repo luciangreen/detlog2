@@ -70,6 +70,7 @@ detlogRuntimeKeys =
   , ("splice_first", 2), ("splice_extend", 4), ("rows_concat", 2)
   , ("cp_filter", 3), ("splice_safe", 1), ("memo_lookup", 3), ("memo_miss", 2)
   , ("length_det", 2), ("builtin_rows", 2)
+  , ("effect_text", 2), ("packet_first", 3), ("packet_split", 3)
   ]
 
 -- | Built-ins with side effects (output).
@@ -192,6 +193,9 @@ builtinTable = M.fromList
                                               t -> typeErr "choice packet cp/1" t)
   , (("splice_safe", 1), spliceSafeB)
   , (("length_det", 2), lengthDetB)
+  , (("effect_text", 2), effectTextB)
+  , (("packet_first", 3), packetFirstB)
+  , (("packet_split", 3), packetSplitB)
   , (("builtin_rows", 2), builtinRowsB)
   , (("memo_lookup", 3), memoLookupB)
   , (("memo_miss", 2), \[k, a] st -> [Err ("memo_miss: " ++ showTermQ (resolve st k)
@@ -707,7 +711,9 @@ spliceExtendB [rows, env, pat, out] st = case termToList st rows of
   Nothing -> [Err ("splice_extend/4: rows are not a proper list: " ++ showTermQ (resolve st rows))]
   Just rs ->
     let pair = Comp "-" [env, pat]
-        step (acc, s) r =
+        step (acc, s) r
+          | Comp "out" [_] <- walk s r = (resolve s r : acc, s)
+          | otherwise =
           let (c, s1) = copyTerm s pair
           in case c of
                Comp "-" [e', p'] -> case unify p' r s1 of
@@ -778,3 +784,52 @@ builtinRowsB [g, rows] st = case walk st g of
                              (cs, s2) = copyAll s1 ys
                          in (c : cs, s2)
 builtinRowsB _ _ = []
+
+-- ---------------------------------------------------------------------------
+-- Effects as data
+--
+-- In converted code, output is not written when a goal runs.  It is an item
+-- out(Text) of the answer packet, placed exactly where Prolog would write
+-- it, and the top level writes the items in packet order.
+
+isOutItem :: State -> Term -> Bool
+isOutItem st t = case walk st t of
+  Comp "out" [_] -> True
+  _ -> False
+
+-- | effect_text(+Goal, -Text): the text an output built-in would write.
+effectTextB :: [Term] -> State -> Stream
+effectTextB [g, txt] st = case walk st g of
+  g'@(Comp f as) | (f, length as) `elem` effectKeys -> run g' f as
+  g'@(Atom f) | (f, 0) `elem` effectKeys -> run g' f []
+  t -> typeErr "output built-in" t
+  where
+    run _ f as = case builtin f as st of
+      Just s -> case [ e | Err e <- s ] of
+        (e : _) -> [Err e]
+        [] -> fromMaybeU (unify txt (Atom (concat [ o | Out o <- s ])) st)
+      Nothing -> [Err "effect_text/2: not a built-in"]
+effectTextB _ _ = []
+
+-- | packet_first(+Packet, -OutsBefore, -Result): the output items before the
+-- first answer row, and first(Row), or none when the packet has no row.
+packetFirstB :: [Term] -> State -> Stream
+packetFirstB [p, pre, res] st = case termToList st p of
+  Just items ->
+    let (outs, rest) = span (isOutItem st) items
+        r = case rest of
+          (row : _) -> Comp "first" [row]
+          [] -> Atom "none"
+    in fromMaybeU (unify pre (mkList outs (Atom "[]")) st >>= unify res r)
+  Nothing -> typeErr "packet" (resolve st p)
+packetFirstB _ _ = []
+
+-- | packet_split(+Packet, -Outs, -Rows): output items and answer rows.
+packetSplitB :: [Term] -> State -> Stream
+packetSplitB [p, outs, rows] st = case termToList st p of
+  Just items ->
+    let os = filter (isOutItem st) items
+        rs = filter (not . isOutItem st) items
+    in fromMaybeU (unify outs (mkList os (Atom "[]")) st >>= unify rows (mkList rs (Atom "[]")))
+  Nothing -> typeErr "packet" (resolve st p)
+packetSplitB _ _ = []

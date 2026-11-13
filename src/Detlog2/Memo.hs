@@ -4,6 +4,8 @@
 -- included) is run once with the reference engine, and the complete answer
 -- packet is written into the converted program as data:
 --
+-- Output written by a memoised call is recorded as out(Text) items.
+--
 -- > p__cp(A1, A2, Rows) :-
 -- >     if_commit(memo_lookup([A1, A2], [[[10, _], [[10, 55]]]], Rows),
 -- >               true,
@@ -43,23 +45,25 @@ memoCall opts maxAnswers src goal nv table = case goalKey goal of
         let args = mkList (goalArgs goal) (Atom "[]")
             stream = refRun opts (withPrelude src) goal nv
         rows <- collect (maxAnswers + 1) stream args
-        if length rows > maxAnswers
+        if length (filter isRow rows) > maxAnswers
           then Left ("memoise: " ++ showTermQ goal ++ " has more than " ++ show maxAnswers
                      ++ " answers; raise --max-answers if the packet is finite")
           else Right (M.insertWith (flip (++)) key [(args, rows)] table)
   where
+    isRow (Comp "out" [_]) = False
+    isRow _ = True
     collect 0 _ _ = Right []
     collect _ [] _ = Right []
     collect k (Ans s : r) args = (resolve s args :) <$> collect (k - (1 :: Int)) r args
-    collect k (Out _ : r) args = collect k r args
+    collect k (Out o : r) args = (Comp "out" [Atom o] :) <$> collect k r args
     collect _ (Err e : _) _ = Left ("memoise: " ++ showTermQ goal ++ " raised: " ++ e)
 
 -- | Put the tables into a converted program.  With complete = True the
 -- predicate is answered from its table alone.
-addMemoTables :: Bool -> MemoTable -> Program -> Program
-addMemoTables complete table conv = foldl add conv (M.toList table)
+addMemoTables :: Bool -> MemoTable -> Program -> (Program, [Term])
+addMemoTables complete table conv = foldl add (conv, []) (M.toList table)
   where
-    add p ((f, n), entries) =
+    add (p, steps) ((f, n), entries) =
       let key = (cpName f, n + 1)
           computeKey = (cpName f ++ "__compute", n + 1)
           args = [ Var i ("A" ++ show (i + 1)) | i <- [0 .. n - 1] ]
@@ -81,7 +85,10 @@ addMemoTables complete table conv = foldl add conv (M.toList table)
           order1 = if M.member key (progPreds p) then progOrder p else progOrder p ++ [key]
           order2 = if complete || null renamed then order1
                    else concatMap (\k -> if k == key then [key, computeKey] else [k]) order1
-      in p { progPreds = preds2, progOrder = order2 }
+          step = Comp "memo_table" [ Comp "/" [Atom f, Int (fromIntegral n)]
+                                   , Atom (if complete then "true" else "false")
+                                   , Comp ":-" [clHead memoClause, clBody memoClause] ]
+      in (p { progPreds = preds2, progOrder = order2 }, steps ++ [step])
 
 -- | Give every entry its own variables, numbered from 'start'.
 renameEntries :: Int -> [(Term, [Term])] -> (Term, Int)

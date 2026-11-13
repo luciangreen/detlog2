@@ -57,9 +57,13 @@ convertedOutcome opts maxAns conv k =
   in case (errs, [ s | Ans s <- stream ]) of
        (e : _, _) -> Outcome [] outText (Just e) False
        ([], [s]) -> case termToList s rowsV of
-         Just rows ->
-           let shown = map (showAnswerTerm . resolve s) rows
-           in Outcome (take maxAns shown) outText Nothing (length shown > maxAns)
+         Just items ->
+           let isOut t = case t of
+                 Comp "out" [_] -> True
+                 _ -> False
+               packetOut = concat [ a | Comp "out" [Atom a] <- map (resolve s) items ]
+               shown = [ showAnswerTerm (resolve s r) | r <- items, not (isOut (resolve s r)) ]
+           in Outcome (take maxAns shown) (outText ++ packetOut) Nothing (length shown > maxAns)
          Nothing -> Outcome [] outText (Just "query packet is not a proper list") False
        ([], []) -> Outcome [] outText (Just "the converted query packet failed (it must succeed exactly once)") False
        ([], _) -> Outcome [] outText (Just "the converted query packet succeeded more than once") False
