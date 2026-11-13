@@ -1,0 +1,1001 @@
+detlog2: 200 inputs and outputs, from real runs (runghc Build.hs ios writes this file; runghc Build.hs check-ios checks it).
+
+1. detlog2 ref examples/cuts.pl 'max(1, 3, Z)'
+   => Z = 3.
+
+2. detlog2 check examples/cuts.pl 'classify(-2, C)'
+   => ok   classify(-2, C)
+        proof accepted: 5 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+3. detlog2 packets examples/splice.pl 'c(A, A)'
+   => packet: cp([])
+      false.
+      proof accepted: 9 steps, 10 clauses justified
+
+4. detlog2 check examples/sample_program.pl 'if_then_else(1, Y)'
+   => ok   if_then_else(1, Y)
+        proof accepted: 4 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+5. detlog2 run examples/sample_program.pl 'findall(Y, (member(X, [1]), Y is X * 2), R)'
+   => R = [2].
+
+6. detlog2 check examples/output.pl 'logged(L)'
+   => ok   logged(L)
+        proof accepted: 11 steps, 16 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+7. detlog2 check examples/memo.pl 'fib(7, F)'
+   => ok   fib(7, F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+8. detlog2 check examples/cuts.pl 'firsts([5,9,2], F)'
+   => ok   firsts([5,9,2], F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+9. detlog2 check examples/sample_program.pl 'maplist(succ, [3,5,3], L)'
+   => ok   maplist(succ, [3,5,3], L)
+        proof accepted: 9 steps, 7 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+10. detlog2 run examples/sample_program.pl 'det_sum([6,5,3,5], S)'
+   => S = 19.
+
+11. detlog2 ref examples/cuts.pl 'max(4, 5, Z)'
+   => Z = 5.
+
+12. detlog2 check examples/cuts.pl 'classify(-1, C)'
+   => ok   classify(-1, C)
+        proof accepted: 5 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+13. detlog2 packets examples/splice.pl 'c(A, A)'
+   => packet: cp([])
+      false.
+      proof accepted: 9 steps, 10 clauses justified
+
+14. detlog2 check examples/sample_program.pl 'if_then_else(-3, Y)'
+   => ok   if_then_else(-3, Y)
+        proof accepted: 4 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+15. detlog2 run examples/sample_program.pl 'findall(Y, (member(X, [3]), Y is X * 4), R)'
+   => R = [12].
+
+16. detlog2 check examples/output.pl 'logged(L)'
+   => ok   logged(L)
+        proof accepted: 11 steps, 16 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+17. detlog2 check examples/memo.pl 'fib(4, F)'
+   => ok   fib(4, F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+18. detlog2 check examples/cuts.pl 'firsts([3,5,3], F)'
+   => ok   firsts([3,5,3], F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+19. detlog2 check examples/sample_program.pl 'maplist(succ, [5,3,5], L)'
+   => ok   maplist(succ, [5,3,5], L)
+        proof accepted: 9 steps, 7 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+20. detlog2 run examples/sample_program.pl 'det_sum([1,5], S)'
+   => S = 6.
+
+21. detlog2 ref examples/cuts.pl 'max(0, 0, Z)'
+   => Z = 0.
+
+22. detlog2 check examples/cuts.pl 'classify(0, C)'
+   => ok   classify(0, C)
+        proof accepted: 5 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+23. detlog2 packets examples/splice.pl 'c(A, A)'
+   => packet: cp([])
+      false.
+      proof accepted: 9 steps, 10 clauses justified
+
+24. detlog2 check examples/sample_program.pl 'if_then_else(0, Y)'
+   => ok   if_then_else(0, Y)
+        proof accepted: 4 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+25. detlog2 run examples/sample_program.pl 'findall(Y, (member(X, [5]), Y is X * 2), R)'
+   => R = [10].
+
+26. detlog2 check examples/output.pl 'logged(L)'
+   => ok   logged(L)
+        proof accepted: 11 steps, 16 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+27. detlog2 check examples/memo.pl 'fib(1, F)'
+   => ok   fib(1, F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+28. detlog2 check examples/cuts.pl 'firsts([1,5,9], F)'
+   => ok   firsts([1,5,9], F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+29. detlog2 check examples/sample_program.pl 'maplist(succ, [6,5,3], L)'
+   => ok   maplist(succ, [6,5,3], L)
+        proof accepted: 9 steps, 7 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+30. detlog2 run examples/sample_program.pl 'det_sum([], S)'
+   => S = 0.
+
+31. detlog2 ref examples/cuts.pl 'max(3, 2, Z)'
+   => Z = 3.
+
+32. detlog2 check examples/cuts.pl 'classify(1, C)'
+   => ok   classify(1, C)
+        proof accepted: 5 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+33. detlog2 packets examples/splice.pl 'c(A, A)'
+   => packet: cp([])
+      false.
+      proof accepted: 9 steps, 10 clauses justified
+
+34. detlog2 check examples/sample_program.pl 'if_then_else(3, Y)'
+   => ok   if_then_else(3, Y)
+        proof accepted: 4 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+35. detlog2 run examples/sample_program.pl 'findall(Y, (member(X, [5]), Y is X * 4), R)'
+   => R = [20].
+
+36. detlog2 check examples/output.pl 'logged(L)'
+   => ok   logged(L)
+        proof accepted: 11 steps, 16 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+37. detlog2 check examples/memo.pl 'fib(11, F)'
+   => ok   fib(11, F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+38. detlog2 check examples/cuts.pl 'firsts([5,3,5], F)'
+   => ok   firsts([5,3,5], F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+39. detlog2 check examples/sample_program.pl 'maplist(succ, [2,6,5], L)'
+   => ok   maplist(succ, [2,6,5], L)
+        proof accepted: 9 steps, 7 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+40. detlog2 run examples/sample_program.pl 'det_sum([2,6,5,3], S)'
+   => S = 16.
+
+41. detlog2 ref examples/cuts.pl 'max(6, 4, Z)'
+   => Z = 6.
+
+42. detlog2 check examples/cuts.pl 'classify(2, C)'
+   => ok   classify(2, C)
+        proof accepted: 5 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+43. detlog2 packets examples/splice.pl 'c(A, A)'
+   => packet: cp([])
+      false.
+      proof accepted: 9 steps, 10 clauses justified
+
+44. detlog2 check examples/sample_program.pl 'if_then_else(-1, Y)'
+   => ok   if_then_else(-1, Y)
+        proof accepted: 4 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+45. detlog2 run examples/sample_program.pl 'findall(Y, (member(X, [9]), Y is X * 2), R)'
+   => R = [18].
+
+46. detlog2 check examples/output.pl 'logged(L)'
+   => ok   logged(L)
+        proof accepted: 11 steps, 16 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+47. detlog2 check examples/memo.pl 'fib(8, F)'
+   => ok   fib(8, F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+48. detlog2 check examples/cuts.pl 'firsts([4,1,5], F)'
+   => ok   firsts([4,1,5], F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+49. detlog2 check examples/sample_program.pl 'maplist(succ, [9,2,6], L)'
+   => ok   maplist(succ, [9,2,6], L)
+        proof accepted: 9 steps, 7 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+50. detlog2 run examples/sample_program.pl 'det_sum([4,1], S)'
+   => S = 5.
+
+51. detlog2 ref examples/cuts.pl 'max(2, 6, Z)'
+   => Z = 6.
+
+52. detlog2 check examples/cuts.pl 'classify(3, C)'
+   => ok   classify(3, C)
+        proof accepted: 5 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+53. detlog2 packets examples/splice.pl 'c(A, A)'
+   => packet: cp([])
+      false.
+      proof accepted: 9 steps, 10 clauses justified
+
+54. detlog2 check examples/sample_program.pl 'if_then_else(2, Y)'
+   => ok   if_then_else(2, Y)
+        proof accepted: 4 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+55. detlog2 run examples/sample_program.pl 'findall(Y, (member(X, [3]), Y is X * 4), R)'
+   => R = [12].
+
+56. detlog2 check examples/output.pl 'logged(L)'
+   => ok   logged(L)
+        proof accepted: 11 steps, 16 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+57. detlog2 check examples/memo.pl 'fib(5, F)'
+   => ok   fib(5, F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+58. detlog2 check examples/cuts.pl 'firsts([6,5,3], F)'
+   => ok   firsts([6,5,3], F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+59. detlog2 check examples/sample_program.pl 'maplist(succ, [5,9,2], L)'
+   => ok   maplist(succ, [5,9,2], L)
+        proof accepted: 9 steps, 7 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+60. detlog2 run examples/sample_program.pl 'det_sum([], S)'
+   => S = 0.
+
+61. detlog2 ref examples/cuts.pl 'max(5, 1, Z)'
+   => Z = 5.
+
+62. detlog2 check examples/cuts.pl 'classify(4, C)'
+   => ok   classify(4, C)
+        proof accepted: 5 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+63. detlog2 packets examples/splice.pl 'c(A, A)'
+   => packet: cp([])
+      false.
+      proof accepted: 9 steps, 10 clauses justified
+
+64. detlog2 check examples/sample_program.pl 'if_then_else(-2, Y)'
+   => ok   if_then_else(-2, Y)
+        proof accepted: 4 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+65. detlog2 run examples/sample_program.pl 'findall(Y, (member(X, [2]), Y is X * 2), R)'
+   => R = [4].
+
+66. detlog2 check examples/output.pl 'logged(L)'
+   => ok   logged(L)
+        proof accepted: 11 steps, 16 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+67. detlog2 check examples/memo.pl 'fib(2, F)'
+   => ok   fib(2, F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+68. detlog2 check examples/cuts.pl 'firsts([1,4,1], F)'
+   => ok   firsts([1,4,1], F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+69. detlog2 check examples/sample_program.pl 'maplist(succ, [1,5,9], L)'
+   => ok   maplist(succ, [1,5,9], L)
+        proof accepted: 9 steps, 7 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+70. detlog2 run examples/sample_program.pl 'det_sum([9,2,6,5], S)'
+   => S = 22.
+
+71. detlog2 ref examples/cuts.pl 'max(1, 3, Z)'
+   => Z = 3.
+
+72. detlog2 check examples/cuts.pl 'classify(-4, C)'
+   => ok   classify(-4, C)
+        proof accepted: 5 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+73. detlog2 packets examples/splice.pl 'c(A, A)'
+   => packet: cp([])
+      false.
+      proof accepted: 9 steps, 10 clauses justified
+
+74. detlog2 check examples/sample_program.pl 'if_then_else(1, Y)'
+   => ok   if_then_else(1, Y)
+        proof accepted: 4 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+75. detlog2 run examples/sample_program.pl 'findall(Y, (member(X, [1]), Y is X * 4), R)'
+   => R = [4].
+
+76. detlog2 check examples/output.pl 'logged(L)'
+   => ok   logged(L)
+        proof accepted: 11 steps, 16 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+77. detlog2 check examples/memo.pl 'fib(12, F)'
+   => ok   fib(12, F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+78. detlog2 check examples/cuts.pl 'firsts([2,6,5], F)'
+   => ok   firsts([2,6,5], F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+79. detlog2 check examples/sample_program.pl 'maplist(succ, [4,1,5], L)'
+   => ok   maplist(succ, [4,1,5], L)
+        proof accepted: 9 steps, 7 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+80. detlog2 run examples/sample_program.pl 'det_sum([1,4], S)'
+   => S = 5.
+
+81. detlog2 ref examples/cuts.pl 'max(4, 5, Z)'
+   => Z = 5.
+
+82. detlog2 check examples/cuts.pl 'classify(-3, C)'
+   => ok   classify(-3, C)
+        proof accepted: 5 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+83. detlog2 packets examples/splice.pl 'c(A, A)'
+   => packet: cp([])
+      false.
+      proof accepted: 9 steps, 10 clauses justified
+
+84. detlog2 check examples/sample_program.pl 'if_then_else(-3, Y)'
+   => ok   if_then_else(-3, Y)
+        proof accepted: 4 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+85. detlog2 run examples/sample_program.pl 'findall(Y, (member(X, [6]), Y is X * 2), R)'
+   => R = [12].
+
+86. detlog2 check examples/output.pl 'logged(L)'
+   => ok   logged(L)
+        proof accepted: 11 steps, 16 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+87. detlog2 check examples/memo.pl 'fib(9, F)'
+   => ok   fib(9, F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+88. detlog2 check examples/cuts.pl 'firsts([3,1,4], F)'
+   => ok   firsts([3,1,4], F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+89. detlog2 check examples/sample_program.pl 'maplist(succ, [1,4,1], L)'
+   => ok   maplist(succ, [1,4,1], L)
+        proof accepted: 9 steps, 7 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+90. detlog2 run examples/sample_program.pl 'det_sum([], S)'
+   => S = 0.
+
+91. detlog2 ref examples/cuts.pl 'max(0, 0, Z)'
+   => Z = 0.
+
+92. detlog2 check examples/cuts.pl 'classify(-2, C)'
+   => ok   classify(-2, C)
+        proof accepted: 5 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+93. detlog2 packets examples/splice.pl 'c(A, A)'
+   => packet: cp([])
+      false.
+      proof accepted: 9 steps, 10 clauses justified
+
+94. detlog2 check examples/sample_program.pl 'if_then_else(0, Y)'
+   => ok   if_then_else(0, Y)
+        proof accepted: 4 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+95. detlog2 run examples/sample_program.pl 'findall(Y, (member(X, [4]), Y is X * 4), R)'
+   => R = [16].
+
+96. detlog2 check examples/output.pl 'logged(L)'
+   => ok   logged(L)
+        proof accepted: 11 steps, 16 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+97. detlog2 check examples/memo.pl 'fib(6, F)'
+   => ok   fib(6, F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+98. detlog2 check examples/cuts.pl 'firsts([9,2,6], F)'
+   => ok   firsts([9,2,6], F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+99. detlog2 check examples/sample_program.pl 'maplist(succ, [3,1,4], L)'
+   => ok   maplist(succ, [3,1,4], L)
+        proof accepted: 9 steps, 7 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+100. detlog2 run examples/sample_program.pl 'det_sum([5,9,2,6], S)'
+   => S = 22.
+
+101. detlog2 ref examples/cuts.pl 'max(3, 2, Z)'
+   => Z = 3.
+
+102. detlog2 check examples/cuts.pl 'classify(-1, C)'
+   => ok   classify(-1, C)
+        proof accepted: 5 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+103. detlog2 packets examples/splice.pl 'c(A, A)'
+   => packet: cp([])
+      false.
+      proof accepted: 9 steps, 10 clauses justified
+
+104. detlog2 check examples/sample_program.pl 'if_then_else(3, Y)'
+   => ok   if_then_else(3, Y)
+        proof accepted: 4 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+105. detlog2 run examples/sample_program.pl 'findall(Y, (member(X, [5]), Y is X * 2), R)'
+   => R = [10].
+
+106. detlog2 check examples/output.pl 'logged(L)'
+   => ok   logged(L)
+        proof accepted: 11 steps, 16 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+107. detlog2 check examples/memo.pl 'fib(3, F)'
+   => ok   fib(3, F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+108. detlog2 check examples/cuts.pl 'firsts([5,3,1], F)'
+   => ok   firsts([5,3,1], F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+109. detlog2 check examples/sample_program.pl 'maplist(succ, [5,3,1], L)'
+   => ok   maplist(succ, [5,3,1], L)
+        proof accepted: 9 steps, 7 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+110. detlog2 run examples/sample_program.pl 'det_sum([3,1], S)'
+   => S = 4.
+
+111. detlog2 ref examples/cuts.pl 'max(6, 4, Z)'
+   => Z = 6.
+
+112. detlog2 check examples/cuts.pl 'classify(0, C)'
+   => ok   classify(0, C)
+        proof accepted: 5 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+113. detlog2 packets examples/splice.pl 'c(A, A)'
+   => packet: cp([])
+      false.
+      proof accepted: 9 steps, 10 clauses justified
+
+114. detlog2 check examples/sample_program.pl 'if_then_else(-1, Y)'
+   => ok   if_then_else(-1, Y)
+        proof accepted: 4 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+115. detlog2 run examples/sample_program.pl 'findall(Y, (member(X, [1]), Y is X * 4), R)'
+   => R = [4].
+
+116. detlog2 check examples/output.pl 'logged(L)'
+   => ok   logged(L)
+        proof accepted: 11 steps, 16 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+117. detlog2 check examples/memo.pl 'fib(0, F)'
+   => ok   fib(0, F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+118. detlog2 check examples/cuts.pl 'firsts([5,9,2], F)'
+   => ok   firsts([5,9,2], F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+119. detlog2 check examples/sample_program.pl 'maplist(succ, [3,5,3], L)'
+   => ok   maplist(succ, [3,5,3], L)
+        proof accepted: 9 steps, 7 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+120. detlog2 run examples/sample_program.pl 'det_sum([], S)'
+   => S = 0.
+
+121. detlog2 ref examples/cuts.pl 'max(2, 6, Z)'
+   => Z = 6.
+
+122. detlog2 check examples/cuts.pl 'classify(1, C)'
+   => ok   classify(1, C)
+        proof accepted: 5 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+123. detlog2 packets examples/splice.pl 'c(A, A)'
+   => packet: cp([])
+      false.
+      proof accepted: 9 steps, 10 clauses justified
+
+124. detlog2 check examples/sample_program.pl 'if_then_else(2, Y)'
+   => ok   if_then_else(2, Y)
+        proof accepted: 4 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+125. detlog2 run examples/sample_program.pl 'findall(Y, (member(X, [3]), Y is X * 2), R)'
+   => R = [6].
+
+126. detlog2 check examples/output.pl 'logged(L)'
+   => ok   logged(L)
+        proof accepted: 11 steps, 16 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+127. detlog2 check examples/memo.pl 'fib(10, F)'
+   => ok   fib(10, F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+128. detlog2 check examples/cuts.pl 'firsts([3,5,3], F)'
+   => ok   firsts([3,5,3], F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+129. detlog2 check examples/sample_program.pl 'maplist(succ, [5,3,5], L)'
+   => ok   maplist(succ, [5,3,5], L)
+        proof accepted: 9 steps, 7 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+130. detlog2 run examples/sample_program.pl 'det_sum([1,5,9,2], S)'
+   => S = 17.
+
+131. detlog2 ref examples/cuts.pl 'max(5, 1, Z)'
+   => Z = 5.
+
+132. detlog2 check examples/cuts.pl 'classify(2, C)'
+   => ok   classify(2, C)
+        proof accepted: 5 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+133. detlog2 packets examples/splice.pl 'c(A, A)'
+   => packet: cp([])
+      false.
+      proof accepted: 9 steps, 10 clauses justified
+
+134. detlog2 check examples/sample_program.pl 'if_then_else(-2, Y)'
+   => ok   if_then_else(-2, Y)
+        proof accepted: 4 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+135. detlog2 run examples/sample_program.pl 'findall(Y, (member(X, [5]), Y is X * 4), R)'
+   => R = [20].
+
+136. detlog2 check examples/output.pl 'logged(L)'
+   => ok   logged(L)
+        proof accepted: 11 steps, 16 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+137. detlog2 check examples/memo.pl 'fib(7, F)'
+   => ok   fib(7, F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+138. detlog2 check examples/cuts.pl 'firsts([1,5,9], F)'
+   => ok   firsts([1,5,9], F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+139. detlog2 check examples/sample_program.pl 'maplist(succ, [6,5,3], L)'
+   => ok   maplist(succ, [6,5,3], L)
+        proof accepted: 9 steps, 7 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+140. detlog2 run examples/sample_program.pl 'det_sum([5,3], S)'
+   => S = 8.
+
+141. detlog2 ref examples/cuts.pl 'max(1, 3, Z)'
+   => Z = 3.
+
+142. detlog2 check examples/cuts.pl 'classify(3, C)'
+   => ok   classify(3, C)
+        proof accepted: 5 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+143. detlog2 packets examples/splice.pl 'c(A, A)'
+   => packet: cp([])
+      false.
+      proof accepted: 9 steps, 10 clauses justified
+
+144. detlog2 check examples/sample_program.pl 'if_then_else(1, Y)'
+   => ok   if_then_else(1, Y)
+        proof accepted: 4 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+145. detlog2 run examples/sample_program.pl 'findall(Y, (member(X, [5]), Y is X * 2), R)'
+   => R = [10].
+
+146. detlog2 check examples/output.pl 'logged(L)'
+   => ok   logged(L)
+        proof accepted: 11 steps, 16 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+147. detlog2 check examples/memo.pl 'fib(4, F)'
+   => ok   fib(4, F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+148. detlog2 check examples/cuts.pl 'firsts([5,3,5], F)'
+   => ok   firsts([5,3,5], F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+149. detlog2 check examples/sample_program.pl 'maplist(succ, [2,6,5], L)'
+   => ok   maplist(succ, [2,6,5], L)
+        proof accepted: 9 steps, 7 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+150. detlog2 run examples/sample_program.pl 'det_sum([], S)'
+   => S = 0.
+
+151. detlog2 ref examples/cuts.pl 'max(4, 5, Z)'
+   => Z = 5.
+
+152. detlog2 check examples/cuts.pl 'classify(4, C)'
+   => ok   classify(4, C)
+        proof accepted: 5 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+153. detlog2 packets examples/splice.pl 'c(A, A)'
+   => packet: cp([])
+      false.
+      proof accepted: 9 steps, 10 clauses justified
+
+154. detlog2 check examples/sample_program.pl 'if_then_else(-3, Y)'
+   => ok   if_then_else(-3, Y)
+        proof accepted: 4 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+155. detlog2 run examples/sample_program.pl 'findall(Y, (member(X, [9]), Y is X * 4), R)'
+   => R = [36].
+
+156. detlog2 check examples/output.pl 'logged(L)'
+   => ok   logged(L)
+        proof accepted: 11 steps, 16 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+157. detlog2 check examples/memo.pl 'fib(1, F)'
+   => ok   fib(1, F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+158. detlog2 check examples/cuts.pl 'firsts([4,1,5], F)'
+   => ok   firsts([4,1,5], F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+159. detlog2 check examples/sample_program.pl 'maplist(succ, [9,2,6], L)'
+   => ok   maplist(succ, [9,2,6], L)
+        proof accepted: 9 steps, 7 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+160. detlog2 run examples/sample_program.pl 'det_sum([4,1,5,9], S)'
+   => S = 19.
+
+161. detlog2 ref examples/cuts.pl 'max(0, 0, Z)'
+   => Z = 0.
+
+162. detlog2 check examples/cuts.pl 'classify(-4, C)'
+   => ok   classify(-4, C)
+        proof accepted: 5 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+163. detlog2 packets examples/splice.pl 'c(A, A)'
+   => packet: cp([])
+      false.
+      proof accepted: 9 steps, 10 clauses justified
+
+164. detlog2 check examples/sample_program.pl 'if_then_else(0, Y)'
+   => ok   if_then_else(0, Y)
+        proof accepted: 4 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+165. detlog2 run examples/sample_program.pl 'findall(Y, (member(X, [3]), Y is X * 2), R)'
+   => R = [6].
+
+166. detlog2 check examples/output.pl 'logged(L)'
+   => ok   logged(L)
+        proof accepted: 11 steps, 16 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+167. detlog2 check examples/memo.pl 'fib(11, F)'
+   => ok   fib(11, F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+168. detlog2 check examples/cuts.pl 'firsts([6,5,3], F)'
+   => ok   firsts([6,5,3], F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+169. detlog2 check examples/sample_program.pl 'maplist(succ, [5,9,2], L)'
+   => ok   maplist(succ, [5,9,2], L)
+        proof accepted: 9 steps, 7 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+170. detlog2 run examples/sample_program.pl 'det_sum([3,5], S)'
+   => S = 8.
+
+171. detlog2 ref examples/cuts.pl 'max(3, 2, Z)'
+   => Z = 3.
+
+172. detlog2 check examples/cuts.pl 'classify(-3, C)'
+   => ok   classify(-3, C)
+        proof accepted: 5 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+173. detlog2 packets examples/splice.pl 'c(A, A)'
+   => packet: cp([])
+      false.
+      proof accepted: 9 steps, 10 clauses justified
+
+174. detlog2 check examples/sample_program.pl 'if_then_else(3, Y)'
+   => ok   if_then_else(3, Y)
+        proof accepted: 4 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+175. detlog2 run examples/sample_program.pl 'findall(Y, (member(X, [2]), Y is X * 4), R)'
+   => R = [8].
+
+176. detlog2 check examples/output.pl 'logged(L)'
+   => ok   logged(L)
+        proof accepted: 11 steps, 16 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+177. detlog2 check examples/memo.pl 'fib(8, F)'
+   => ok   fib(8, F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+178. detlog2 check examples/cuts.pl 'firsts([1,4,1], F)'
+   => ok   firsts([1,4,1], F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+179. detlog2 check examples/sample_program.pl 'maplist(succ, [1,5,9], L)'
+   => ok   maplist(succ, [1,5,9], L)
+        proof accepted: 9 steps, 7 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+180. detlog2 run examples/sample_program.pl 'det_sum([], S)'
+   => S = 0.
+
+181. detlog2 ref examples/cuts.pl 'max(6, 4, Z)'
+   => Z = 6.
+
+182. detlog2 check examples/cuts.pl 'classify(-2, C)'
+   => ok   classify(-2, C)
+        proof accepted: 5 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+183. detlog2 packets examples/splice.pl 'c(A, A)'
+   => packet: cp([])
+      false.
+      proof accepted: 9 steps, 10 clauses justified
+
+184. detlog2 check examples/sample_program.pl 'if_then_else(-1, Y)'
+   => ok   if_then_else(-1, Y)
+        proof accepted: 4 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+185. detlog2 run examples/sample_program.pl 'findall(Y, (member(X, [1]), Y is X * 2), R)'
+   => R = [2].
+
+186. detlog2 check examples/output.pl 'logged(L)'
+   => ok   logged(L)
+        proof accepted: 11 steps, 16 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+187. detlog2 check examples/memo.pl 'fib(5, F)'
+   => ok   fib(5, F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+188. detlog2 check examples/cuts.pl 'firsts([2,6,5], F)'
+   => ok   firsts([2,6,5], F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+189. detlog2 check examples/sample_program.pl 'maplist(succ, [4,1,5], L)'
+   => ok   maplist(succ, [4,1,5], L)
+        proof accepted: 9 steps, 7 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+190. detlog2 run examples/sample_program.pl 'det_sum([1,4,1,5], S)'
+   => S = 11.
+
+191. detlog2 ref examples/cuts.pl 'max(2, 6, Z)'
+   => Z = 6.
+
+192. detlog2 check examples/cuts.pl 'classify(-1, C)'
+   => ok   classify(-1, C)
+        proof accepted: 5 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+193. detlog2 packets examples/splice.pl 'c(A, A)'
+   => packet: cp([])
+      false.
+      proof accepted: 9 steps, 10 clauses justified
+
+194. detlog2 check examples/sample_program.pl 'if_then_else(2, Y)'
+   => ok   if_then_else(2, Y)
+        proof accepted: 4 steps, 4 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+195. detlog2 run examples/sample_program.pl 'findall(Y, (member(X, [6]), Y is X * 4), R)'
+   => R = [24].
+
+196. detlog2 check examples/output.pl 'logged(L)'
+   => ok   logged(L)
+        proof accepted: 11 steps, 16 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+197. detlog2 check examples/memo.pl 'fib(2, F)'
+   => ok   fib(2, F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+198. detlog2 check examples/cuts.pl 'firsts([3,1,4], F)'
+   => ok   firsts([3,1,4], F)
+        proof accepted: 8 steps, 10 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+199. detlog2 check examples/sample_program.pl 'maplist(succ, [1,4,1], L)'
+   => ok   maplist(succ, [1,4,1], L)
+        proof accepted: 9 steps, 7 clauses justified
+        1 answer(s) and the output, identical and in the same order
+      all checks passed
+
+200. detlog2 run examples/sample_program.pl 'det_sum([5,3], S)'
+   => S = 8.
