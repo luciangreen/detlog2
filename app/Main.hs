@@ -109,8 +109,9 @@ dispatch cmd fl = case (cmd, fPositional fl) of
   ("packets", [file, q]) -> do
     p <- loadProgram file
     (g, vs, nv) <- parseQ q
-    let (p', _) = addQueryClause g (map snd vs) nv p
-    conv <- convertOrDie fl p'
+    let (p', qk) = addQueryClause g (map snd vs) nv p
+    conv <- either (\e -> die' ("conversion failed: " ++ e)) return
+              (convertProgram defaultConvertOptions { coSpliceEarly = fSplice fl, coRoots = Just [qk] } p')
     reportCheck (crProgram conv)
     let k = length vs
         vars = [ Var i ("V" ++ show i) | i <- [0 .. k - 1] ]
@@ -191,8 +192,8 @@ checkQuery :: Flags -> Program -> String -> IO Bool
 checkQuery fl p q = do
   (g, vs, nv) <- parseQ q
   let vars = map snd vs
-      (p', _) = addQueryClause g vars nv p
-  case convertProgram defaultConvertOptions { coSpliceEarly = fSplice fl } p' of
+      (p', qk) = addQueryClause g vars nv p
+  case convertProgram defaultConvertOptions { coSpliceEarly = fSplice fl, coRoots = Just [qk] } p' of
     Left e -> putStrLn ("FAIL " ++ q ++ "\n  conversion failed: " ++ e) >> return False
     Right conv -> do
       let problems = checkDeterministic (crProgram conv)
@@ -229,7 +230,8 @@ memoise fl file = do
       -- only, so their own (possibly cut-using) clauses are not converted.
       external = if fComplete fl then memoKeys else Set.empty
       p1 = if fComplete fl then dropPreds memoKeys p else p
-      opts = defaultConvertOptions { coSpliceEarly = fSplice fl, coExternal = external }
+      opts = defaultConvertOptions { coSpliceEarly = fSplice fl, coExternal = external
+                                   , coRoots = Just (Set.toList memoKeys) }
       withQ q = do
         (g, vs, nv) <- parseQ q
         return (addQueryClause g (map snd vs) nv p1, (g, vs, nv))
@@ -240,8 +242,8 @@ memoise fl file = do
                                 | ((f, n), k) <- tableSizes table ]
   writeConverted fl file events memoProg
   okAll <- forM (fChecks fl) $ \q -> do
-    ((pq, _), (g, vs, nv)) <- withQ q
-    case convertProgram opts pq of
+    ((pq, qk), (g, vs, nv)) <- withQ q
+    case convertProgram opts { coRoots = Just (qk : Set.toList memoKeys) } pq of
       Left e -> putStrLn ("FAIL " ++ q ++ ": " ++ e) >> return False
       Right cq -> do
         let prog = addMemoTables (fComplete fl) table (crProgram cq)
@@ -273,8 +275,8 @@ mnnsPass fl file = do
   okAll <- forM (fChecks fl) $ \q -> do
     orig <- loadProgram file
     (g, vs, nv) <- parseQ q
-    let (pq, _) = addQueryClause g (map snd vs) nv p
-    case convertProgram defaultConvertOptions { coSpliceEarly = fSplice fl } pq of
+    let (pq, qk) = addQueryClause g (map snd vs) nv p
+    case convertProgram defaultConvertOptions { coSpliceEarly = fSplice fl, coRoots = Just [qk] } pq of
       Left e -> putStrLn ("FAIL " ++ q ++ ": " ++ e) >> return False
       Right cq -> do
         let src = sourceOutcome defaultOptions (fMax fl) orig g (map snd vs) nv

@@ -88,7 +88,7 @@ num(1). num(2). num(3).
 big(R) :- findall(X, (num(X), X > 1), R).
 pos(X) :- X > 0, !.
 EOF
-  expect "mnns: report line" "MNNS_OPTIMISE ok" $D mnns build/mnns_in.pl --mnns "$MNNS_DIR" -o build/mnns_det.pl \
+  expect "mnns: report line" "MNN_OPTIMISE ok" $D mnns build/mnns_in.pl --mnns "$MNNS_DIR" -o build/mnns_det.pl \
     --check 'big(R)' --check 'pos(3)' --check 'pos(-3)'
   expect "mnns: checks pass" "ok   big(R)" $D mnns build/mnns_in.pl --mnns "$MNNS_DIR" -o build/mnns_det.pl --check 'big(R)'
 else

@@ -54,10 +54,11 @@ import Detlog2.Term
 data ConvertOptions = ConvertOptions
   { coSpliceEarly :: Bool          -- ^ combine independent generators with splice/2
   , coExternal :: Set.Set PredKey  -- ^ predicates whose __cp code is supplied elsewhere (memo tables)
+  , coRoots :: Maybe [PredKey]     -- ^ convert only what these reach (Nothing: everything)
   }
 
 defaultConvertOptions :: ConvertOptions
-defaultConvertOptions = ConvertOptions True Set.empty
+defaultConvertOptions = ConvertOptions True Set.empty Nothing
 
 data ConvertResult = ConvertResult
   { crProgram :: Program        -- ^ the deterministic Detlog program
@@ -95,10 +96,11 @@ prepareProgram external p0 = do
 
 convertProgram :: ConvertOptions -> Program -> Either String ConvertResult
 convertProgram opts p0 = do
-  (p1, prepEvents) <- prepareProgram (coExternal opts) p0
+  let p0' = maybe p0 (\roots -> restrictTo roots p0) (coRoots opts)
+  (p1, prepEvents) <- prepareProgram (coExternal opts) p0'
   -- member/2 that the program does not define itself is the Detlog
   -- runtime's member_cp/2 packet, not a library predicate.
-  let userMember = M.member ("member", 2) (progPreds p0)
+  let userMember = M.member ("member", 2) (progPreds p0')
       p = if userMember then p1
           else p1 { progPreds = M.delete ("member", 2) (progPreds p1)
                   , progOrder = filter (/= ("member", 2)) (progOrder p1) }
@@ -463,6 +465,17 @@ bodyCalls t = case t of
   Comp "aggregate_all" [_, g, _] -> bodyCalls g
   Comp "call" (g : extra) | Just g' <- addArgs g extra, not (isVar g) -> bodyCalls g'
   _ -> maybe [] (: []) (goalKey t)
+
+-- | The predicates reachable from some roots.
+restrictTo :: [PredKey] -> Program -> Program
+restrictTo roots p =
+  let calls k = concatMap (bodyCalls . clBody) (M.findWithDefault [] k (progPreds p))
+      reach s = let s' = s `Set.union` Set.fromList [ c | k <- Set.toList s, c <- calls k
+                                                         , M.member c (progPreds p) ]
+                in if s' == s then s else reach s'
+      keep = reach (Set.fromList (filter (`M.member` progPreds p) roots))
+  in p { progPreds = M.filterWithKey (\k _ -> Set.member k keep) (progPreds p)
+       , progOrder = filter (`Set.member` keep) (progOrder p) }
 
 -- | Keep the program's own predicates and the library predicates they use.
 pruneUnused :: Set.Set PredKey -> Set.Set PredKey -> Program -> Program
