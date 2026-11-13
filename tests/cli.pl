@@ -101,6 +101,14 @@ run_kind(mnns, mnns, F0, F) :-
               ( mnns_actions(Dir, As), foldl(run_action, As, F0, F) ),
               ( format("SKIP mnns bridge (swipl or MNNS_DIR missing)~n"), F = F0 )).
 
+run_kind(unfold_checks, unfold_checks, F0, F) :-
+    Qs = ['step(X, 13)', 'square(N, 25)', 'square(4, S)', 'pair(N, S, C)', 'anc(X, dee)',
+          'anc(bob, cy)', 'either(1)', 'triangle(N, T)', 'two_steps(X, Z)', 'first_colour(C)'],
+    findall(A, ( member(Q, Qs), member(A, ['--check', Q]) ), CArgs),
+    out([unfold, 'examples/unfold.pl', '-o', 'build/unfold_det.pl'|CArgs], O),
+    findall(Q, ( member(Q, Qs), format(string(W), "ok   ~w", [Q]), if_commit(sub_string(O, _, _, _, W), fail, true) ), Bad),
+    test_b(( Bad == [], if_commit(sub_string(O, _, _, _, "FAIL"), fail, true) ), B),
+    report(B, 'unfold: every check passes', O, F0, F).
 run_kind(write_file, write_file(Path, Text), F, F) :-
     run_kind_write(Path, Text).
 
@@ -219,6 +227,27 @@ actions([
   expect('memoise: fib table with fallback', "ok   fib(20, F)",
          [memoise, 'examples/memo.pl', '--goal', 'fib(20, F)', '-o', 'build/fib_det.pl',
           '--check', 'fib(20, F)', '--check', 'fib(7, F)']),
+  % unfold: answer tables of pure predicates, as S2A loops
+  write_file("build/unfold_checks.txt", ""),
+  unfold_checks,
+  file_has('unfold: a formula is found', "A2 = 3 + 5*I", 'build/unfold_det.pl'),
+  file_has('unfold: a quadratic is found', "A2 = (1/2)*I + (1/2)*I^2", 'build/unfold_det.pl'),
+  file_has('unfold: the loop is in the code', "s2a_rows(s2a(5, [newton([0, 1]), newton([3, 5])])", 'build/unfold_det.pl'),
+  file_has('unfold: an impure predicate is kept', "kept first_colour/1: not pure", 'build/unfold_det.pl'),
+  file_has('unfold: an infinite predicate is kept', "kept evens/1: not unfolded: more than", 'build/unfold_det.pl'),
+  code_free('unfold: no cut, ; or -> in output', 'build/unfold_det.pl', ["!", ";", "->"]),
+  exact('unfold: the loop goes straight to the row', "Rows = [[2, 13]].",
+        [run, '--det', 'build/unfold_det.pl', 'step__cp(X, 13, Rows)']),
+  expect('unfold: proof-check from files', "proof accepted",
+         ['proof-check', 'examples/unfold.pl', 'build/unfold_det.pl', 'build/unfold_det.pl.proof']),
+  replace('build/unfold_det.pl', 'build/unfold_bad.pl', "newton([3, 5])", "newton([3, 6])"),
+  replace('build/unfold_det.pl.proof', 'build/unfold_bad.proof', "newton([3, 5])", "newton([3, 6])"),
+  expect('unfold: a wrong formula is rejected', "the loop's rows are not the program's answers",
+         ['proof-check', 'examples/unfold.pl', 'build/unfold_bad.pl', 'build/unfold_bad.proof']),
+  replace('examples/unfold.pl', 'build/unfold_cut.pl', "square(N, S) :- between(0, 6, N), S is N * N.",
+          "square(N, S) :- between(0, 6, N), S is N * N, !."),
+  expect('unfold: a loop for an impure predicate is rejected', "the predicate is not pure",
+         ['proof-check', 'build/unfold_cut.pl', 'build/unfold_det.pl', 'build/unfold_det.pl.proof']),
   % mnns bridge (needs SWI-Prolog and mnns)
   mnns
 ]).

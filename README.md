@@ -1,6 +1,6 @@
 # detlog2
 
-detlog2 is Detlog redone in cut-free, choicepoint-free Prolog. It has four
+detlog2 is Detlog redone in cut-free, choicepoint-free Prolog. It has five
 parts:
 
 1. **A choicepointless, cutless Prolog interpreter.**
@@ -12,6 +12,8 @@ parts:
 4. **A bridge to [mnns](https://github.com/luciangreen/mnns)** that runs mnns's
    proof-checked rewrites (`optimise.pl`) first and then converts what they
    produce.
+5. **An unfolder** that turns the data of every pure predicate into its
+   answer table, and each table into a loop found with Spec to Algorithm.
 
 The original, SWI-Prolog Detlog is at
 [luciangreen/detlog](https://github.com/luciangreen/detlog).
@@ -217,6 +219,78 @@ choicepoint. The mnns report line is kept in the output header. If SWI-Prolog
 or mnns is missing, the pass is reported as not applied, and the conversion
 still runs.
 
+## 5. Unfolding the data into loops (Spec to Algorithm)
+
+```sh
+detlog2 unfold examples/unfold.pl -o out.pl --check 'step(X, 13)' --check 'anc(X, dee)'
+```
+
+`unfold` removes every choicepoint of the program's data in two steps, and
+proves both.
+
+**1. Unfold.** A predicate is *pure* when its clauses use only conjunction,
+disjunction, `true`, the built-ins `=/2`, `is/2`, arithmetic comparison,
+`between/3`, `member/2`, `succ/2` and `plus/3`, and calls to pure predicates
+(recursion is allowed). For every pure predicate `p/n`, the most general goal
+`p(A1, ..., An)` is run once with ordinary Prolog semantics. If its packet is
+finite (at most `--max` rows, 1000 by default), writes nothing and has only
+ground answers, it is the whole answer table of `p`.
+
+**2. Spec to Algorithm (S2A).** Each table becomes a loop over the row index
+`I = 0 .. K-1`. Each column is described by one of:
+
+| column | meaning | example |
+| --- | --- | --- |
+| `newton([D0, ..., Dd])` | an integer polynomial of degree `d =< 3` in Newton form, `D0 + D1*C(I,1) + ... + Dd*C(I,d)`; accepted only when it fits at least `d + 2` rows | `step/2`: `A2 = 3 + 5*I` is `newton([3, 5])` |
+| `const(T)` | the same term in every row | |
+| `data([V0, ..., VK-1])` | no formula: the values themselves | `colour/2`: `[red, green, blue]` |
+
+```prolog
+% step(0, 3). step(1, 8). step(2, 13). step(3, 18). step(4, 23).
+step__cp(A1, A2, Rows) :-
+    s2a_rows(s2a(5, [newton([0, 1]), newton([3, 5])]), [A1, A2], Rows).
+
+% square(N, S) :- between(0, 6, N), S is N * N.
+square__cp(A1, A2, Rows) :-
+    s2a_rows(s2a(7, [newton([0, 1]), newton([0, 1, 2])]), [A1, A2], Rows).
+```
+
+`s2a_rows/3` builds the rows with a deterministic loop and keeps those that
+unify with the call. When a column is linear and the call gives that argument
+as an integer, the loop is skipped and the row is computed directly:
+`step__cp(X, 13, R)` solves `13 = 3 + 5*I` for `I = 2`.
+
+Impure predicates (a cut, negation, if-then-else, a type test or output) and
+predicates whose table is not finite are converted as usual. They call the
+loops of the pure predicates they use. The header of the output lists what
+was unfolded, with each formula, and what was kept and why:
+
+```
+% unfolded step/2: 5 rows; S2A loop for I = 0..4: A1 = I, A2 = 3 + 5*I
+% unfolded triangle/2: 10 rows; S2A loop for I = 0..9: A1 = I, A2 = (1/2)*I + (1/2)*I^2
+% kept first_colour/1: not pure (a cut, negation, if-then-else, type test or output, ...)
+% kept evens/1: not unfolded: more than 1000 answers (raise --max if it is finite)
+```
+
+**Proof.** Every loop is a proof step `s2a_table(p/n, Clause)`, checked by
+rule S2A in [docs/proof_rules.md](docs/proof_rules.md). The checker re-derives
+that `p` is pure, re-runs the most general goal on the source program, and
+requires the loop's rows to be exactly its answers, in order. Purity is what
+makes the one table right for every call: the answers of `p(T1, ..., Tn)` are
+then the table's rows that unify with `[T1, ..., Tn]`, in the same order.
+
+**Limit: errors.** A call that makes a built-in raise an error in the source,
+such as `square(a, S)` reaching `between(0, 6, a)`, gives no rows from the
+loop instead of the error.
+
+**What it does and does not save.** Measured on plain SWI-Prolog with
+`examples/unfold.pl`, every unfolded call leaves no choicepoint, where the
+original leaves one for `square(N, 25)`, `triangle(N, T)`, `pair/3`,
+`anc(X, dee)` and `two_steps/2`. The unfolded calls make more inferences
+(95 to 872, against 13 to 42), because the runtime commits with `findall/3`
+over `limit/2` instead of a cut. Unfolding removes nondeterminism; it does not
+make these small programs faster.
+
 ## Runtime constructs
 
 | predicate | meaning |
@@ -230,6 +304,7 @@ still runs.
 | `rows_concat(Lists, Rows)` | concatenate packets |
 | `if_commit(C, T, E)`, `once_det(G)`, `decision(Cases, Default)` | commitment without cut |
 | `memo_lookup/3`, `memo_miss/2` | memo tables |
+| `s2a_rows(Spec, Args, Rows)` | the rows of an S2A loop `s2a(K, Columns)` that unify with Args (see 5) |
 | `cp_filter(P, Pattern, Rows)` | the rows of a fact packet that unify with Pattern |
 | `splice_safe(Groups)` | the groups share no unbound variable, so they can be spliced |
 | `length_det/2`, `builtin_rows/2`, `effect_text/2`, `packet_first/3`, `packet_split/3` | deterministic built-in modes, output as data, packet access |
@@ -269,6 +344,7 @@ src/check.pl              static choicepoint-freedom check, answer comparison
 src/proof.pl              independent proof checker (docs/proof_rules.md)
 src/proof_steps.pl        its step and derivation rules
 src/memo.pl               answer tables, mnns optimise.pl bridge
+src/unfold.pl             unfolding pure predicates, S2A loops and rule S2A
 src/cli.pl                the commands
 tools/cutfree.pl          cut-free / choicepoint-free source checker
 tests/cli.pl              end-to-end tests

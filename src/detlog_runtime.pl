@@ -43,6 +43,7 @@
             packet_split/3,
             memo_lookup/3,
             memo_miss/2,
+            s2a_rows/3,
             write_packet/2
           ]).
 
@@ -374,6 +375,59 @@ memo_find([E|Es], Args, Rows) :-
 %   A complete memo table has no entry for Args: an error.
 memo_miss(K, A) :-
     rt_error("memo_miss: ~q was memoised as complete, but has no entry for ~q", [K, A]).
+
+% ---------------------------------------------------------------------------
+% S2A loops (detlog2 unfold)
+
+%!  s2a_rows(+Spec, ?Args, -Rows)
+%
+%   Spec is s2a(K, Columns), each column newton(Ds), const(T) or data(Vs)
+%   (see src/unfold.pl).  Rows are the rows I = 0 .. K-1 that unify with
+%   Args, in order.  A linear column newton([D0, D1]) whose argument is an
+%   integer X gives the row index I = (X - D0) / D1 directly.
+s2a_rows(Spec, Args, Rows) :-
+    if_commit(( nonvar(Spec), Spec = s2a(K, Cols), integer(K), is_list(Cols), is_list(Args) ),
+              ( s2a_select(K, Cols, Args, Sel), splice_extend(Sel, Args, Args, Rows) ),
+              rt_error("s2a_rows/3: expected s2a(K, Columns) and an argument list, got ~q", [Spec])).
+
+s2a_select(K, Cols, Args, Rows) :-
+    if_commit(( nth0(J, Cols, newton([D0, D1])), D1 =\= 0, nth0(J, Args, X), integer(X) ),
+              s2a_index(K, Cols, D0, D1, X, Rows),
+              s2a_all(K, Cols, Rows)).
+
+s2a_index(K, Cols, D0, D1, X, Rows) :-
+    Q is X - D0,
+    if_commit(( Q mod D1 =:= 0, I is Q // D1, I >= 0, I < K ),
+              ( s2a_row(Cols, I, R), Rows = [R] ),
+              Rows = []).
+
+s2a_all(K, Cols, Rows) :-
+    K1 is K - 1,
+    findall(R, ( between(0, K1, I), s2a_row(Cols, I, R) ), Rows).
+
+s2a_row(Cols, I, R) :-
+    s2a_row_(Cols, I, R).
+
+s2a_row_([], _, []).
+s2a_row_([C|Cs], I, [V|Vs]) :-
+    s2a_value(C, I, V),
+    s2a_row_(Cs, I, Vs).
+
+s2a_value(newton(Ds), I, V) :-
+    s2a_newton(Ds, I, 0, 1, 0, V).
+s2a_value(const(T), _, T).
+s2a_value(data(Vs), I, V) :-
+    s2a_nth(Vs, I, V).
+
+s2a_nth([X|Xs], I, V) :-
+    if_commit(I =:= 0, V = X, ( I1 is I - 1, s2a_nth(Xs, I1, V) )).
+
+s2a_newton([], _, _, _, V, V).
+s2a_newton([D|Ds], I, K, C, A, V) :-
+    A1 is A + D * C,
+    C1 is C * (I - K) // (K + 1),
+    K1 is K + 1,
+    s2a_newton(Ds, I, K1, C1, A1, V).
 
 % ---------------------------------------------------------------------------
 % Helpers

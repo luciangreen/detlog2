@@ -26,7 +26,7 @@ control_keys([',/2', ';/2', '->/2', '*->/2', '\\+/1', 'call/1',
 detlog_runtime_keys(['member_cp/2', 'between_cp/3', 'cp_rows/2', 'splice/2',
                      'splice_first/2', 'splice_extend/4', 'rows_concat/2',
                      'cp_filter/3', 'splice_safe/1', 'memo_lookup/3', 'memo_miss/2',
-                     'length_det/2', 'builtin_rows/2',
+                     's2a_rows/3', 'length_det/2', 'builtin_rows/2',
                      'effect_text/2', 'packet_first/3', 'packet_split/3']).
 
 effect_keys(['write/1', 'print/1', 'writeln/1', 'writeq/1',
@@ -60,7 +60,7 @@ builtin_keys(['=/2', '\\=/2', '==/2', '\\==/2', '@</2', '@>/2', '@=</2', '@>=/2'
               'splice_first/2', 'splice_extend/4', 'rows_concat/2',
               'cp_filter/3', 'splice_safe/1', 'length_det/2', 'effect_text/2',
               'packet_first/3', 'packet_split/3', 'builtin_rows/2',
-              'memo_lookup/3', 'memo_miss/2']).
+              'memo_lookup/3', 'memo_miss/2', 's2a_rows/3']).
 
 key_in(Table, K, B) :-
     call(Table, L),
@@ -295,6 +295,8 @@ bi('builtin_rows/2', [G, Rows], St, S) :-
     builtin_rows_b(W, Rows, St, S).
 bi('memo_lookup/3', [Args, Table, Rows], St, S) :-
     memo_lookup_b(Args, Table, Rows, St, S).
+bi('s2a_rows/3', [Spec, Args, Rows], St, S) :-
+    s2a_rows_b(Spec, Args, Rows, St, S).
 bi('memo_miss/2', [K, A], St, [err(M)]) :-
     resolve(K, St, RK),
     resolve(A, St, RA),
@@ -1445,6 +1447,18 @@ memo_go([E|Es], Args, Rows, St, S) :-
     if_commit(( ME = just([Pat, Rs]), variant_t(St, Pat, Args, true) ),
               ( copy_term_st(St, Rs, C, St1), unify(Rows, C, St1, M), maybe_stream(M, S) ),
               memo_go(Es, Args, Rows, St, S)).
+
+%  s2a_rows(+Spec, ?Args, -Rows): the rows of an S2A loop (unfold.pl) that
+%  unify with Args.
+s2a_rows_b(Spec, Args, Rows, St, S) :-
+    resolve(Spec, St, RS),
+    resolve(Args, St, RA),
+    if_commit(( spec_parts(RS, just(K-Cols)), static_list(RA, just(AL)) ),
+              ( spec_select(K, Cols, AL, Sel),
+                maplist(list_t, Sel, SelTs),
+                mk_list(SelTs, atom('[]'), T),
+                splice_extend_b(T, Args, Args, Rows, St, S) ),
+              type_err('S2A spec s2a(K, Columns) and an argument list', RS, S)).
 
 %  length/2 restricted to its deterministic modes.
 length_det_b(L, N, St, S) :-
