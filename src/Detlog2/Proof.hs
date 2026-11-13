@@ -425,8 +425,8 @@ checkClauseStep cx0 s = case s of
                        (where' ++ "body is not the derivation's code followed by the projection")
                 ensure (fresh cx [envRows]) (where' ++ "Env is not fresh")
                 xs <- chk cx deriv
-                return (envRows : xs)
-            ensure (allDistinct ([argsV, rowsV] ++ intro)) (where' ++ "a fresh variable is introduced twice")
+                return (varIds [envRows] ++ xs)
+            ensure (distinctIds (varIds [argsV, rowsV] ++ intro)) (where' ++ "a fresh variable is introduced twice")
             return [gen]
       _ -> failWith (where' ++ "wrong clause shape")
   _ -> failWith "bad clause step"
@@ -453,7 +453,7 @@ checkAuxStep cx0 s = case s of
             let frame = [row, rs, out, o1, o2, t]
             ensure (fresh cx frame) (where' ++ "frame variables are not fresh")
             xs <- chk cx deriv
-            ensure (allDistinct (frame ++ xs)) (where' ++ "a fresh variable is introduced twice")
+            ensure (distinctIds (varIds frame ++ xs)) (where' ++ "a fresh variable is introduced twice")
             return [c1, c2]
       _ -> failWith (where' ++ "wrong iteration clause")
   _ -> failWith "bad aux step"
@@ -508,6 +508,12 @@ fresh :: Cx -> [Term] -> Bool
 fresh cx ts = all (\t -> case t of
                           Var i _ -> not (IS.member i (cxClauseVars cx))
                           _ -> False) ts
+
+varIds :: [Term] -> [Int]
+varIds ts = [ i | Var i _ <- ts ]
+
+distinctIds :: [Int] -> Bool
+distinctIds is = IS.size (IS.fromList is) == length is
 
 allDistinct :: [Term] -> Bool
 allDistinct ts = IS.size (IS.fromList [ i | Var i _ <- ts ]) == length ts && all isVar ts
