@@ -1,0 +1,10 @@
+ok   a(X)
+  proof accepted: 10 steps, 11 clauses justified
+  1 answer(s) and the output, identical and in the same order
+ok   max(3, 7, Z)
+  proof accepted: 5 steps, 4 clauses justified
+  1 answer(s) and the output, identical and in the same order
+ok   classify(0, C)
+  proof accepted: 5 steps, 4 clauses justified
+  1 answer(s) and the output, identical and in the same order
+all checks passed

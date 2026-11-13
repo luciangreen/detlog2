@@ -1,0 +1,2 @@
+% detlog2 conversion proof: one step per rewrite (see docs/proof_rules.md).
+memo_table(pick / 2, true, (pick__cp(_G0, _G1, _G2) :- if_commit(memo_lookup([_G0, _G1], [[[2, _G3], [[2, small], [2, other]]], [[5, _G4], [[5, big]]]], _G2), true, memo_miss(pick / 2, [_G0, _G1])))).

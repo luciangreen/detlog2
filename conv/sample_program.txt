@@ -1,0 +1,1 @@
+wrote /home/runner/work/_temp/log/conv/sample_program.pl and /home/runner/work/_temp/log/conv/sample_program.pl.proof

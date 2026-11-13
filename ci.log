@@ -1,0 +1,83 @@
+[ 1 of 16] Compiling Detlog2.Mnns     ( src/Detlog2/Mnns.hs, build/Detlog2/Mnns.o )
+[ 2 of 16] Compiling Detlog2.Term     ( src/Detlog2/Term.hs, build/Detlog2/Term.o )
+[ 3 of 16] Compiling Detlog2.Parser   ( src/Detlog2/Parser.hs, build/Detlog2/Parser.o )
+[ 4 of 16] Compiling Detlog2.Pretty   ( src/Detlog2/Pretty.hs, build/Detlog2/Pretty.o )
+[ 5 of 16] Compiling Detlog2.Prelude  ( src/Detlog2/Prelude.hs, build/Detlog2/Prelude.o )
+[ 6 of 16] Compiling Detlog2.CutElim  ( src/Detlog2/CutElim.hs, build/Detlog2/CutElim.o )
+[ 7 of 16] Compiling Detlog2.Builtins ( src/Detlog2/Builtins.hs, build/Detlog2/Builtins.o )
+[ 8 of 16] Compiling Detlog2.Interp   ( src/Detlog2/Interp.hs, build/Detlog2/Interp.o )
+[ 9 of 16] Compiling Detlog2.Reference ( src/Detlog2/Reference.hs, build/Detlog2/Reference.o )
+[10 of 16] Compiling Detlog2.Proof    ( src/Detlog2/Proof.hs, build/Detlog2/Proof.o )
+[11 of 16] Compiling Detlog2.Convert  ( src/Detlog2/Convert.hs, build/Detlog2/Convert.o )
+
+src/Detlog2/Convert.hs:406:7: warning: [GHC-53633] [-Woverlapping-patterns]
+    Pattern match is redundant
+    In a case alternative: gs | otherwise -> ...
+    |
+406 |     | otherwise -> gfail "internal: empty conjunction"
+    |       ^^^^^^^^^
+[12 of 16] Compiling Detlog2.Memo     ( src/Detlog2/Memo.hs, build/Detlog2/Memo.o )
+[13 of 16] Compiling Detlog2.Equiv    ( src/Detlog2/Equiv.hs, build/Detlog2/Equiv.o )
+[14 of 16] Compiling Detlog2.Check    ( src/Detlog2/Check.hs, build/Detlog2/Check.o )
+[15 of 16] Compiling Main             ( app/Main.hs, build/Main.o )
+[16 of 16] Linking build/detlog2
+Cloning into 'build/mnns'...
+[1 of 2] Compiling Main             ( tests/Cli.hs, build/t/Main.o )
+[2 of 2] Linking build/cli-tests
+PASS run: member order
+PASS run: det_sum
+PASS run: duplicate facts kept
+PASS run: cut rejected
+PASS run: first answer of an infinite generator
+PASS run: if-then-else
+PASS run: findall
+PASS run: output
+PASS run: a "!" string is data, not a cut
+PASS ref: cut semantics
+PASS ref: red cut max
+PASS convert: packets
+PASS convert: proof accepted while converting
+PASS convert: proof file written
+PASS convert: no cut in output
+PASS convert: no ; or -> in output
+PASS convert: cut event for safe_cut
+PASS convert: facts to member_cp
+PASS convert: output as data
+PASS converted: det_sum packet
+PASS converted: safe_cut packet
+PASS converted: if_then_else packet
+PASS converted: output is a packet item
+PASS proof-check: accepted from files
+PASS proof-check: tampered code rejected
+PASS proof-check: wrong source rejected
+PASS proof-check: tampered proof rejected
+PASS packets: splice early
+PASS packets: enumerate late
+PASS convert: splice/2 used
+PASS convert: splice event
+PASS proof-check: splice
+PASS check: sample
+PASS check: cuts
+PASS check: splice
+PASS check: library
+PASS check: output order
+PASS check: output order (no splice)
+PASS check: memo example fib
+PASS convert: unsupported cut is reported
+PASS memoise: complete table
+PASS memoise: table in output
+PASS memoise: table checked by re-running it
+PASS memoise: answers
+PASS memoise: miss is an error
+PASS memoise: proof-check from files
+PASS memoise: a wrong table is rejected
+PASS memoise: fib table with fallback
+PASS mnns: report line
+PASS mnns: checks pass
+PASS mnns: proof accepted
+
+all CLI tests passed
+[1 of 2] Compiling Main             ( io/Ios.hs, build/io/Main.o )
+[2 of 2] Linking build/ios
+All 200 inputs give the outputs in io/ios.txt.
+exit 0

@@ -1,0 +1,34 @@
+cut-free check: no problems
+exit 0
+PASS c(_700,_702): 4 answer(s) and the output identical
+PASS triple(_4542,_4544,_4546): 2 answer(s) and the output identical
+PASS p(_6908): 3 answer(s) and the output identical
+PASS q(_9676,_9678): 2 answer(s) and the output identical
+PASS a(_622): 1 answer(s) and the output identical
+PASS max(3,7,_2502): 1 answer(s) and the output identical
+PASS max(7,3,_4238): 1 answer(s) and the output identical
+PASS classify(-1,_5972): 1 answer(s) and the output identical
+PASS classify(0,_7654): 1 answer(s) and the output identical
+PASS classify(5,_9336): 1 answer(s) and the output identical
+PASS firsts([1,2,3],_500): 1 answer(s) and the output identical
+PASS two(_1586,_1588): 1 answer(s) and the output identical
+PASS no_big([1,2]): 1 answer(s) and the output identical
+PASS no_big([1,9]): 0 answer(s) and the output identical
+PASS bang(_6014): 1 answer(s) and the output identical
+PASS show: 1 answer(s) and the output identical
+PASS pairs: 1 answer(s) and the output identical
+PASS first_big(_6844): 1 answer(s) and the output identical
+PASS count_out(_318): 1 answer(s) and the output identical
+PASS logged(_2056): 1 answer(s) and the output identical
+PASS det_sum([1,2,3],_282): 1 answer(s) and the output identical
+PASS nondet_member(_1340,[a,b,c]): 3 answer(s) and the output identical
+PASS multi_fact(_4650): 3 answer(s) and the output identical
+PASS if_then_else(5,_7420): 1 answer(s) and the output identical
+PASS if_then_else(-1,_9102): 1 answer(s) and the output identical
+PASS safe_cut(1): 1 answer(s) and the output identical
+PASS safe_cut(0): 1 answer(s) and the output identical
+PASS side_effect(hello): 1 answer(s) and the output identical
+PASS pick(2,_96): 2 answer(s) and the output identical
+PASS pick(5,_4564): 1 answer(s) and the output identical
+30 passed, 0 failed
+exit 0
