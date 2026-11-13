@@ -173,10 +173,12 @@ cpName f = f ++ "__cp"
 -- ---------------------------------------------------------------------------
 -- Rule CUT, re-derived: the cut-free form of the source program.
 
+-- | Predicates whose cuts cannot be eliminated are left out; a proof that
+-- relies on one of them then fails when it is looked up.
 baseProgram :: Program -> Check Program
 baseProgram src = do
-  cls <- forM (programClauses src) $ \(k, cs) -> (,) k <$> cutFree k cs
-  let p1 = src { progPreds = M.fromList cls }
+  let cls = [ (k, cs') | (k, cs) <- programClauses src, Right cs' <- [cutFree k cs] ]
+      p1 = src { progPreds = M.fromList cls, progOrder = map fst cls }
       withLib = withPrelude p1
       userMember = M.member ("member", 2) (progPreds src)
   return (if userMember then withLib
