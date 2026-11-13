@@ -435,7 +435,9 @@ checkClauseStep cx0 s = case s of
 checkAuxStep :: Cx -> Term -> Check [Clause]
 checkAuxStep cx0 s = case s of
   Comp "aux" [Atom name, vs, clsT, deriv] -> do
-    [c1T, c2T] <- listOf clsT
+    (c1T, c2T) <- listOf clsT >>= \cs -> case cs of
+      [a, b] -> return (a, b)
+      _ -> failWith "aux: expected two clauses"
     c1 <- asClause c1T
     c2 <- asClause c2T
     let cx = cx0 { cxVs = vs, cxClauseVars = termVarIds vs }
@@ -477,7 +479,9 @@ checkMemoStep ctx s = case s of
                                    else Comp (cpName f ++ "__compute") hargs)) (here ++ "fallback")
             entries <- listOf table
             forM_ entries $ \entry -> do
-              [pat, recorded] <- listOf entry
+              (pat, recorded) <- listOf entry >>= \es -> case es of
+                [a, b] -> return (a, b)
+                _ -> failWith (here ++ "bad table entry")
               pats <- listOf pat
               ensure (length pats == n) (here ++ "pattern arity")
               let goal = if n == 0 then Atom f else Comp f pats
