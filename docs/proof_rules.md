@@ -1,7 +1,7 @@
 # detlog2 proof rules
 
 `detlog2 convert` writes `OUT` and `OUT.proof`. The proof is a list of
-Prolog terms, one step per rewrite. `Detlog2.Proof` checks it without using
+Prolog terms, one step per rewrite. `src/proof.pl` checks it without using
 the converter: `detlog2 proof-check SOURCE OUT OUT.proof`. Every command that
 converts (`convert`, `check`, `packets`, `memoise`, `mnns`) runs the checker
 first, and writes nothing that the checker rejects.
@@ -155,7 +155,7 @@ is derived and checked separately.
 
 ## Choicepoint-freedom
 
-Separately, `Detlog2.Check` verifies that the converted program has the
+Separately, `src/check.pl` verifies that the converted program has the
 following shape:
 
 - no cut, `;`, `->` or `call/N`, and no nondeterministic built-in;

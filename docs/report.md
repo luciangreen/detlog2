@@ -7,7 +7,7 @@ The input Prolog and the Detlog output for every example are listed in
 
 ## What detlog2 is
 
-detlog2 reimplements the earlier SWI-Prolog Detlog. It has four main pieces.
+detlog2 reimplements the earlier SWI-Prolog Detlog. It is written in Prolog with no cut and no choicepoint: every predicate is deterministic and commits with `if_commit/3`. The Haskell version it was ported from is in `haskell/`, and the two give the same output on all 200 recorded inputs. It has four main pieces.
 
 1. **A choicepoint-free, cut-free interpreter.**
    - Goals produce *answer packets*: lists of answers and of the output written between them.

@@ -1,6 +1,7 @@
 # detlog2
 
-detlog2 is Detlog redone in Haskell. It has four parts:
+detlog2 is Detlog redone in cut-free, choicepoint-free Prolog. It has four
+parts:
 
 1. **A choicepointless, cutless Prolog interpreter.**
 2. **A converter** that rewrites Prolog with choicepoints and cuts into
@@ -17,14 +18,30 @@ The original, SWI-Prolog Detlog is at
 
 ## Build
 
-detlog2 is written in Haskell (with Prolog for programs, examples and proofs)
-and uses only GHC's own libraries (base, containers, process, directory).
+detlog2 is written in SWI-Prolog. The Prolog has no cut, `;`, `->`, `\+`,
+`once/1` or other pruning or backtracking construct, and no predicate leaves a
+choicepoint:
+
+- commitment is `if_commit/3` from the Detlog runtime;
+- alternatives are data, as packets and lazy answer streams;
+- the clauses of a predicate are told apart by their first argument, so
+  first-argument indexing selects exactly one.
+
+[`tools/cutfree.pl`](tools/cutfree.pl) checks all of this for every source
+file in CI.
 
 ```sh
-runghc Build.hs          # builds build/detlog2
-runghc Build.hs test     # builds, then runs tests/Cli.hs (end-to-end tests)
-cabal build              # alternatively
+swipl build.pl            # builds build/detlog2 (a saved state)
+swipl build.pl test       # builds, checks the sources are cut-free and choicepoint-free,
+                          # then runs the runtime, end-to-end and native tests
+swipl build.pl ci         # as test, then checks the 200 recorded inputs and outputs
+swipl detlog2.pl run FILE QUERY   # or run from source, without building
 ```
+
+The Haskell version it was ported from is kept in [`haskell/`](haskell/).
+Build and test it with `runghc haskell/Build.hs test`. CI runs both, and
+checks that they give the same output for all 200 recorded inputs:
+`swipl io/ios.pl compare haskell/io/ios.txt`.
 
 The mnns tests also need SWI-Prolog and a clone of mnns: either next to this
 repository (`../mnns`), in `MNNS_DIR`, or given with `--mnns DIR`.
@@ -115,7 +132,7 @@ A splice of goals that may share variables at run time is guarded by
 - predicates that each have either one clause, or two clauses whose first
   arguments are `[]` and `[_|_]` (iteration over a proper list of rows).
 
-`Detlog2.Check` verifies this structure for every converted program, and
+`src/check.pl` verifies this structure for every converted program, and
 `check` and `packets` also run the result with `--det`.
 
 **`detlog2 check FILE QUERY...` does three things:**
@@ -138,7 +155,7 @@ any way.
 `OUT.proof`: one Prolog term per rewrite, naming its rule, the source and the
 code it produced.
 
-- `Detlog2.Proof` checks the proof independently of the converter:
+- `src/proof.pl` checks the proof independently of the converter:
   - it re-derives cut elimination and closure specialisation itself;
   - it checks every generated goal against its rule's template and side
     conditions;
@@ -236,29 +253,32 @@ See [docs/examples.md](docs/examples.md) for the input Prolog and output Detlog 
 ## Layout
 
 ```
-src/Detlog2/Term.hs       terms, immutable substitutions, unification
-src/Detlog2/Parser.hs     standard Prolog reader (operators, strings as char lists)
-src/Detlog2/Pretty.hs     re-readable printing
-src/Detlog2/Builtins.hs   built-ins and the Detlog runtime
-src/Detlog2/Prelude.hs    cut-free library (append, select, maplist, foldl, ...)
-src/Detlog2/Interp.hs     the choicepointless, cutless interpreter
-src/Detlog2/Reference.hs  ordinary cut semantics (oracle for checks and memo tables)
-src/Detlog2/CutElim.hs    cuts -> if_commit/3
-src/Detlog2/Convert.hs    choicepoints -> packets and splices
-src/Detlog2/Check.hs      static choicepoint-freedom check
-src/Detlog2/Proof.hs      independent proof checker (docs/proof_rules.md)
-src/Detlog2/Memo.hs       answer tables
-src/Detlog2/Mnns.hs       mnns optimise.pl bridge
-src/Detlog2/Equiv.hs      answer-sequence comparison
-app/Main.hs               command line
-tests/Cli.hs              end-to-end tests (run by Build.hs and GitHub Actions)
+detlog2.pl                the command line (loads src/)
 src/detlog_runtime.pl     the Detlog runtime as a cut-free SWI-Prolog module
+src/term.pl               terms, immutable substitutions, unification
+src/stream.pl             lazy answer streams (packets)
+src/reader.pl             standard Prolog reader (operators, strings as char lists)
+src/pretty.pl             re-readable printing
+src/builtins.pl           built-ins and the Detlog runtime over object terms
+src/prelude.pl            library predicates for interpreted programs
+src/interp.pl             the choicepointless, cutless interpreter
+src/reference.pl          ordinary cut semantics (oracle for checks and memo tables)
+src/cut_elim.pl           cuts -> if_commit/3
+src/convert.pl            choicepoints -> packets and splices
+src/check.pl              static choicepoint-freedom check, answer comparison
+src/proof.pl              independent proof checker (docs/proof_rules.md)
+src/proof_steps.pl        its step and derivation rules
+src/memo.pl               answer tables, mnns optimise.pl bridge
+src/cli.pl                the commands
 tools/cutfree.pl          cut-free / choicepoint-free source checker
+tests/cli.pl              end-to-end tests
 tests/runtime_tests.pl    runtime tests on SWI-Prolog
 tests/native_tests.pl     converted examples on plain SWI-Prolog vs the originals
+io/ios.pl, io/ios.txt     200 recorded inputs and outputs
+build.pl                  build and test
 docs/examples.md          input Prolog and output Detlog for every example
 docs/report.md            does detlog2 work, and does it optimise?
-Build.hs                  build and test
+haskell/                  the Haskell version (src/Detlog2/*.hs, app/, tests/, io/, Build.hs)
 ```
 
 Related: [plop2](https://github.com/luciangreen/plop2) builds one separate
