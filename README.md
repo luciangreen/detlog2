@@ -17,14 +17,13 @@ The original, SWI-Prolog Detlog is at
 
 ## Build
 
-detlog2 uses only GHC's own libraries (base, containers, process, directory).
+detlog2 is written in Haskell (with Prolog for programs, examples and proofs)
+and uses only GHC's own libraries (base, containers, process, directory).
 
 ```sh
-./scripts/ci.sh                  # builds build/detlog2 and runs the tests
-# or
-ghc -O1 -isrc -outputdir build -o build/detlog2 app/Main.hs
-# or
-cabal build
+runghc Build.hs          # builds build/detlog2
+runghc Build.hs test     # builds, then runs tests/Cli.hs (end-to-end tests)
+cabal build              # alternatively
 ```
 
 The mnns tests also need SWI-Prolog and a clone of mnns: either next to this
@@ -129,14 +128,33 @@ A splice of goals that may share variables at run time is guarded by
 For the original Detlog sample this covers `det_sum/2`, `if_then_else/2` and
 `safe_cut/1`, which are converted, not fallen back.
 
-**Known differences:**
+**Output is data.** An output built-in such as `write(X)` becomes
+`effect_text(write(X), T)`, and the packet gets the item `out(T)` at the place
+where Prolog writes it. Packets therefore carry output in exactly Prolog's
+order, interleaved with the answers. `check` fails if the output differs in
+any way.
 
-- **Output order.** Packets are computed before their continuation runs, so
-  output written inside a generator can come in a different order. `check`
-  reports this as a note.
+**Every conversion carries a proof.** `convert -o OUT` also writes
+`OUT.proof`: one Prolog term per rewrite, naming its rule, the source and the
+code it produced.
+
+- `Detlog2.Proof` checks the proof independently of the converter:
+  - it re-derives cut elimination and closure specialisation itself;
+  - it checks every generated goal against its rule's template and side
+    conditions;
+  - it requires every clause of the output to be justified.
+- Nothing is written unless the proof is accepted.
+- `detlog2 proof-check SOURCE OUT OUT.proof` re-checks the proof from files.
+- The rules and their lemmas are in [docs/proof_rules.md](docs/proof_rules.md).
+
+The tests change one character of the code, the source, the proof or a memo
+table, and check that the proof is rejected.
+
+**Limits:**
+
 - **Infinite generators.** A generator with infinitely many answers
-  (`between(1, inf, X)`, `length(L, N)` with both unbound) cannot be turned
-  into a finite packet and raises an error in converted code.
+  (`between(1, inf, X)`, `length(L, N)` with both unbound) has no finite
+  packet, and converted code raises an error.
 - **Collections.** `bagof/3` and `setof/3` do not group by free variables.
 
 ## 3. Memoisation: expanding choicepoints and cuts into data
@@ -161,6 +179,8 @@ pick__cp(A1, A2, Rows) :-
   code (`p__cp__compute`).
 - With `--complete`, the table is the whole predicate: its source clauses,
   even ones with cuts that cannot be converted, are not needed.
+- The proof checker re-runs every table entry with ordinary Prolog semantics
+  and requires exactly the recorded packet.
 
 ## 4. The mnns bridge
 
@@ -207,11 +227,13 @@ src/Detlog2/Reference.hs  ordinary cut semantics (oracle for checks and memo tab
 src/Detlog2/CutElim.hs    cuts -> if_commit/3
 src/Detlog2/Convert.hs    choicepoints -> packets and splices
 src/Detlog2/Check.hs      static choicepoint-freedom check
+src/Detlog2/Proof.hs      independent proof checker (docs/proof_rules.md)
 src/Detlog2/Memo.hs       answer tables
 src/Detlog2/Mnns.hs       mnns optimise.pl bridge
 src/Detlog2/Equiv.hs      answer-sequence comparison
 app/Main.hs               command line
-tests/cli.sh              end-to-end tests (run by scripts/ci.sh and GitHub Actions)
+tests/Cli.hs              end-to-end tests (run by Build.hs and GitHub Actions)
+Build.hs                  build and test
 ```
 
 Related: [plop2](https://github.com/luciangreen/plop2) builds one separate

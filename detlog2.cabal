@@ -10,7 +10,7 @@ extra-source-files: README.md
 library
     exposed-modules:  Detlog2.Term Detlog2.Parser Detlog2.Pretty Detlog2.Builtins
                       Detlog2.Prelude Detlog2.Interp Detlog2.Reference Detlog2.CutElim
-                      Detlog2.Convert Detlog2.Check Detlog2.Memo Detlog2.Mnns Detlog2.Equiv
+                      Detlog2.Convert Detlog2.Check Detlog2.Memo Detlog2.Mnns Detlog2.Equiv Detlog2.Proof
     hs-source-dirs:   src
     build-depends:    base >=4.14 && <5, containers, process, directory
     default-language: Haskell2010
